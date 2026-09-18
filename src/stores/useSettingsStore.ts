@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { db, type Theme, type Language, type WeekStartDay } from '@/db';
 
 // Re-export types so existing imports in other files don't break
@@ -10,62 +11,35 @@ interface SettingsState {
         language: Language;
         weekStartsOn: WeekStartDay;
     };
-    isLoading: boolean;
-    isInitialized: boolean;
-    initialize: () => Promise<void>;
-    update: (newSettings: Partial<SettingsState['settings']>) => Promise<void>;
+    update: (newSettings: Partial<SettingsState['settings']>) => void;
 }
 
-const DEFAULT_SETTINGS = {
-    theme: 'system' as Theme,
-    language: 'en' as Language,
-    weekStartsOn: 6 as WeekStartDay,
-};
+export const useSettingsStore = create<SettingsState>()(
+    persist(
+        (set, get) => ({
+            settings: {
+                theme: 'system',
+                language: 'en',
+                weekStartsOn: 6,
+            },
+            update: (newSettings) => {
+                const currentSettings = get().settings;
+                const mergedSettings = { ...currentSettings, ...newSettings };
 
-export const useSettingsStore = create<SettingsState>((set, get) => ({
-    settings: DEFAULT_SETTINGS,
-    isLoading: true,
-    isInitialized: false,
+                // 1. Update Zustand state (automatically syncs to localStorage instantly)
+                set({ settings: mergedSettings });
 
-    initialize: async () => {
-        if (get().isInitialized) return;
-        set({ isLoading: true });
-        try {
-            const savedSettings = await db.settings.get('app_settings');
-            if (savedSettings) {
-                set({
-                    settings: {
-                        theme: savedSettings.theme,
-                        language: savedSettings.language,
-                        weekStartsOn: savedSettings.weekStartsOn,
-                    },
-                    isLoading: false,
-                    isInitialized: true,
-                });
-            } else {
-                set({ isLoading: false, isInitialized: true });
-            }
-        } catch (error) {
-            console.error("Failed to load settings:", error);
-            set({ isLoading: false, isInitialized: true });
+                // 2. Sync to IndexedDB in the background
+                db.settings.put({
+                    id: 'app_settings',
+                    ...mergedSettings,
+                    updatedAt: new Date().toISOString(),
+                }).catch(err => console.error("Failed to sync settings to IndexedDB:", err));
+            },
+        }),
+        {
+            name: 'meds-reminder-settings',
+            storage: createJSONStorage(() => localStorage), // Instant synchronous hydration!
         }
-    },
-
-    update: async (newSettings) => {
-        const currentSettings = get().settings;
-        const mergedSettings = { ...currentSettings, ...newSettings };
-
-        // Optimistically update UI immediately
-        set({ settings: mergedSettings });
-
-        try {
-            await db.settings.put({
-                id: 'app_settings',
-                ...mergedSettings,
-                updatedAt: new Date().toISOString(),
-            });
-        } catch (error) {
-            console.error("Failed to save settings:", error);
-        }
-    },
-}));
+    )
+);

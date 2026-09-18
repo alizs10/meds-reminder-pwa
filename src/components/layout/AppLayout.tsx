@@ -6,7 +6,6 @@ import Sidebar from "./Sidebar";
 import { useMedicineStore } from "@/stores/useMedicineStore";
 import { useProfileStore } from "@/stores/useProfileStore";
 import { useLogStore } from "@/stores/useLogStore";
-import { useSettingsStore } from "@/stores/useSettingsStore"; // ✅ Added
 import { useHeader } from "@/hooks/useHeader";
 
 interface AppLayoutProps {
@@ -17,21 +16,20 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const initializeProfile = useProfileStore((s) => s.initialize);
   const initializeMedicines = useMedicineStore((s) => s.initialize);
   const initializeLogs = useLogStore((s) => s.initialize);
-  const initializeSettings = useSettingsStore((s) => s.initialize); // ✅ Added
 
   const { header } = useHeader();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
+    // Settings are now handled synchronously via localStorage, so we only need to init DB data
     Promise.all([
       initializeProfile(),
       initializeMedicines(),
       initializeLogs(),
-      initializeSettings(), // ✅ Added
     ]).catch((error) =>
       console.error("Failed to initialize stores:", error)
     );
-  }, [initializeProfile, initializeMedicines, initializeLogs, initializeSettings]);
+  }, [initializeProfile, initializeMedicines, initializeLogs]);
 
   return (
     <div className="pt-safe w-full h-full min-h-0 flex flex-col">

@@ -23,6 +23,7 @@ export default function HomeScreen() {
         setSelectedDate,
         logDose,
         unlogDose,
+        currentToday
     } = useMedicineSchedule();
 
     const hasData =
@@ -39,6 +40,7 @@ export default function HomeScreen() {
                 onSelectDate={setSelectedDate}
                 getShortDayLabel={getShortDayLabel}
                 getDateLabel={getDateLabel}
+                currentToday={currentToday} // ✅ Added
             />
 
             <div className="flex flex-col gap-y-0.5 px-5 py-4">

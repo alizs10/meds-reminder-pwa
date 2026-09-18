@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { addDays, format, isBefore, isToday, isTomorrow, isYesterday, parse, startOfWeek } from "date-fns";
+import { addDays, format, isBefore, isSameDay, parse, startOfWeek } from "date-fns";
 import { enUS, faIR } from "date-fns/locale";
 import { useMedicineStore } from "@/stores/useMedicineStore";
 import { useLogStore } from "@/stores/useLogStore";
@@ -31,19 +31,57 @@ export function useMedicineSchedule() {
     });
 
     const [nowTick, setNowTick] = useState(() => Date.now());
+
+    // 1. Foreground interval + Visibility API for background tabs
     useEffect(() => {
         const interval = setInterval(() => setNowTick(Date.now()), 30_000);
-        return () => clearInterval(interval);
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                setNowTick(Date.now());
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            clearInterval(interval);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, []);
 
-    const isLoading = isMedsLoading || isLogsLoading;
+    // 2. Derive the actual current "Today" strictly from the ticking clock
+    const currentToday = useMemo(() => {
+        const d = new Date(nowTick);
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }, [nowTick]);
 
+    // 3. Generate week dates based on the ACTUAL current today.
+    // ✅ MOVED UP: Must be declared before the render-phase adjustment logic below.
     const weekDates = useMemo(() => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const weekStart = startOfWeek(today, { weekStartsOn });
+        const weekStart = startOfWeek(currentToday, { weekStartsOn });
         return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-    }, [weekStartsOn]);
+    }, [currentToday, weekStartsOn]);
+
+    // 4. ✅ FIX: Adjust state during the render phase (React 19 pattern)
+    // This replaces the useEffect that caused "cascading renders" and "accessed before declaration" errors.
+    const [prevToday, setPrevToday] = useState(currentToday);
+
+    if (currentToday.getTime() !== prevToday.getTime()) {
+        setPrevToday(currentToday);
+
+        const wasViewingOldToday = isSameDay(selectedDate, prevToday);
+        const isStillVisible = weekDates.some(d => isSameDay(d, selectedDate));
+
+        // If the user was watching the day that just became yesterday, 
+        // OR if their selected day scrolled off the visible calendar strip, snap to the new today.
+        if (wasViewingOldToday || !isStillVisible) {
+            setSelectedDate(currentToday);
+        }
+    }
+
+    const isLoading = isMedsLoading || isLogsLoading;
 
     useEffect(() => {
         if (scrollContainerRef.current) {
@@ -56,16 +94,14 @@ export function useMedicineSchedule() {
         now.setSeconds(0, 0);
 
         const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
-        const isTodaySelected = isToday(selectedDate);
 
-        const todayMidnight = new Date(nowTick);
-        todayMidnight.setHours(0, 0, 0, 0);
-        const isPastSelected = isBefore(selectedDate, todayMidnight);
+        const isTodaySelected = isSameDay(selectedDate, currentToday);
+        const isPastSelected = isBefore(selectedDate, currentToday);
 
         const getDayLabel = (date: Date): string => {
-            if (isToday(date)) return t("home.today");
-            if (isTomorrow(date)) return t("home.tomorrow");
-            if (isYesterday(date)) return t("home.yesterday");
+            if (isSameDay(date, currentToday)) return t("home.today");
+            if (isSameDay(date, addDays(currentToday, 1))) return t("home.tomorrow");
+            if (isSameDay(date, addDays(currentToday, -1))) return t("home.yesterday");
             return format(date, "EEEE", { locale: dateLocale });
         };
 
@@ -138,8 +174,6 @@ export function useMedicineSchedule() {
             });
         };
 
-        // ✅ FIX: Filter logs by `log.date` (the scheduled date) instead of `createdAt`.
-        // This ensures that if a user takes yesterday's pill today, it correctly shows up under yesterday's logs.
         const logsForSelectedDay = logs
             .filter((log) => log.status === "taken" && log.date === selectedDateStr)
             .map((log) => {
@@ -148,7 +182,6 @@ export function useMedicineSchedule() {
             })
             .filter(Boolean) as LogListItem[];
 
-        // Sort by scheduled time first, then by actual taken time
         logsForSelectedDay.sort((a, b) => {
             const timeCompare = a.log.time.localeCompare(b.log.time);
             if (timeCompare !== 0) return timeCompare;
@@ -168,8 +201,6 @@ export function useMedicineSchedule() {
             .filter((item) => item.status === "upcoming")
             .sort((a, b) => a.time.localeCompare(b.time));
 
-        // The earliest upcoming time batch is always "next", regardless of which day is selected.
-        // For past days, upcomingItems will be empty, so this naturally resolves to null.
         const nextTimeStr = upcomingItems.length > 0
             ? upcomingItems[0].time
             : null;
@@ -189,6 +220,7 @@ export function useMedicineSchedule() {
             isTodaySelected,
             weekDates,
             selectedDate,
+            currentToday,
             getDayLabel,
             getShortDayLabel,
             getDateLabel,
@@ -197,7 +229,7 @@ export function useMedicineSchedule() {
             nextForSelectedDay,
             laterForSelectedDay,
         };
-    }, [medicines, logs, selectedDate, t, dateLocale, weekDates, nowTick]);
+    }, [medicines, logs, selectedDate, currentToday, t, dateLocale, weekDates, nowTick]);
 
     return {
         ...scheduleData,

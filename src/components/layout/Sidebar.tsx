@@ -8,7 +8,7 @@ import {
 } from "@tabler/icons-react";
 import { useDrag } from "@use-gesture/react";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 
@@ -33,13 +33,14 @@ type SafeDragHandlers = {
   onPointerLeave?: React.PointerEventHandler<HTMLElement>;
 };
 
-// ✅ Added Settings to menu items
 const menuItems = [
   { labelKey: "navigation.home", icon: <IconSmartHome className="size-5" />, path: "/" },
   { labelKey: "navigation.medicines", icon: <IconPill className="size-5" />, path: "/medicines" },
   { labelKey: "navigation.profile", icon: <IconUser className="size-5" />, path: "/profile" },
   { labelKey: "settings.title", icon: <IconSettings className="size-5" />, path: "/settings" },
 ] as const;
+
+const CLOSE_ANIMATION_MS = 300;
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { t } = useTranslation("common");
@@ -56,6 +57,28 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
+  // ✅ FIX: React 19 "Adjusting state when a prop changes" pattern.
+  // We use a state variable instead of a ref to track the previous `isOpen` value.
+  // This avoids "Cannot access refs during render" and "cascading renders in effect" errors.
+  const [isMounted, setIsMounted] = useState(isOpen);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen) {
+      setIsMounted(true);
+      setDragX(0); // Reset drag position instantly when opening
+    }
+  }
+
+  // We only use useEffect for the delayed unmount timeout (side effect)
+  useEffect(() => {
+    if (!isOpen && isMounted) {
+      const timer = setTimeout(() => setIsMounted(false), CLOSE_ANIMATION_MS);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, isMounted]);
+
   const handleInstallClick = () => {
     if (isIos) {
       setIsHintOpen(true);
@@ -65,7 +88,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   };
 
   const bind = useDrag(
-    ({ active, movement: [mx], velocity: [vx] }) => {
+    ({ active, movement: [mx], velocity: [vx], direction: [dx] }) => {
       setIsDragging(active);
 
       if (active) {
@@ -75,12 +98,25 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           setDragX(Math.min(0, mx));
         }
       } else {
+        let shouldClose = false;
+
         if (isRTL) {
-          if (mx > 100 || vx > 0.5) onClose();
+          // In RTL, sidebar is on the right. Only swiping RIGHT (dx === 1) should close it.
+          if (dx === 1 && (mx > 100 || vx > 0.5)) {
+            shouldClose = true;
+          }
         } else {
-          if (mx < -100 || vx < -0.5) onClose();
+          // In LTR, sidebar is on the left. Only swiping LEFT (dx === -1) should close it.
+          if (dx === -1 && (mx < -100 || vx < -0.5)) {
+            shouldClose = true;
+          }
         }
-        setDragX(0);
+
+        if (shouldClose) {
+          onClose();
+        } else {
+          setDragX(0);
+        }
       }
     },
     {
@@ -93,28 +129,42 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const handlers = bind() as SafeDragHandlers;
   const backdropOpacity = Math.max(0, 1 - Math.abs(dragX) / 250);
 
+  if (!isMounted) {
+    return (
+      <ConfirmDialog
+        open={isHintOpen}
+        onClose={() => setIsHintOpen(false)}
+        onCancel={() => setIsHintOpen(false)}
+        onConfirm={() => setIsHintOpen(false)}
+        title={t("install.title")}
+        description={installHint}
+        confirmText={t("install.gotIt")}
+        cancelText={t("actions.close")}
+      />
+    );
+  }
+
   return (
     <>
       <motion.div
-        initial={false}
-        animate={{ opacity: isOpen ? backdropOpacity : 0 }}
-        transition={{ duration: isDragging ? 0 : 0.2 }}
-        className={`fixed inset-0 max-w-lg mx-auto flex z-998 bg-black/60 backdrop-blur-sm overflow-x-clip ${isOpen ? "" : "pointer-events-none"}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isOpen ? (isDragging ? backdropOpacity : 1) : 0 }}
+        transition={{ duration: CLOSE_ANIMATION_MS / 1000 }}
+        className={`fixed inset-0 max-w-lg mx-auto flex z-998 bg-black/60 backdrop-blur-sm ${isOpen ? "" : "pointer-events-none"}`}
         onClick={onClose}
       />
 
-      <div className="fixed inset-0 z-999 pointer-events-none max-w-lg mx-auto overflow-x-clip">
+      <div className="fixed inset-0 z-999 pointer-events-none max-w-lg mx-auto">
         <motion.aside
           {...handlers}
-          initial={false}
+          initial={{ x: isRTL ? "100%" : "-100%" }}
           animate={{
             x: isOpen ? dragX : (isRTL ? "100%" : "-100%"),
           }}
           transition={{
-            type: isDragging ? "tween" : "spring",
-            damping: 25,
-            stiffness: 200,
-            duration: isDragging ? 0 : 0.3,
+            type: "tween",
+            ease: "easeOut",
+            duration: isDragging ? 0 : CLOSE_ANIMATION_MS / 1000,
           }}
           className={`h-full flex w-4/5 max-w-sm flex-col gap-y-0 bg-secondary dark:bg-background max-h-dvh ${isOpen ? "pointer-events-auto" : "pointer-events-none"}`}
           style={{ touchAction: "pan-y" }}
@@ -127,24 +177,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 className="px-0 py-0"
                 leftIcon={<img src="/logo.webp" className="h-8 w-auto" alt="logo" />}
               >
-                <Typography variant="md" weight="bold">
+                <Typography variant="md" weight="bold" className="text-nowrap">
                   {t("app.name")}
                 </Typography>
               </Button>
             </Link>
 
-            {isInstallable && (
-              <Button
-                size="sm"
-                onClick={handleInstallClick}
-                variant="primary"
-                leftIcon={<IconDownload className="size-4" />}
-              >
-                <Typography className="text-nowrap" variant="sm" weight="medium">
-                  {t("install.button")}
-                </Typography>
-              </Button>
-            )}
+
           </div>
 
           <div className="flex-1 min-h-0 overflow-y-scroll scrollbar-none flex flex-col gap-y-4 pb-6">
@@ -166,6 +205,23 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </NavLink>
               ))}
             </nav>
+          </div>
+
+          <div className="mt-auto mb-4 px-5 gap-x-3 w-full">
+            {/* {true && ( */}
+            {isInstallable && (
+              <Button
+                size="sm"
+                onClick={handleInstallClick}
+                variant="primary"
+                leftIcon={<IconDownload className="size-4" />}
+                className="w-full"
+              >
+                <Typography className="text-nowrap" variant="sm" weight="medium">
+                  {t("install.button")}
+                </Typography>
+              </Button>
+            )}
           </div>
 
           <div className="mt-auto flex-row-center gap-x-3 p-5 bg-muted dark:bg-secondary">
@@ -202,8 +258,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </Button>
             </div>
           </div>
-        </motion.aside>
-      </div>
+        </motion.aside >
+      </div >
 
       <ConfirmDialog
         open={isHintOpen}
