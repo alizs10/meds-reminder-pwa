@@ -1,0 +1,22 @@
+{
+    "welcomeTitle": "Welcome to Meds Reminder",
+    "welcomeSubtitle": "Let's personalize your experience.",
+    "profileSection": "Your Profile",
+    "nameLabel": "What should we call you?",
+    "namePlaceholder": "e.g., Alex",
+    "birthdateLabel": "Your Birthdate",
+    "birthdatePlaceholder": "Select your birthdate",
+    "preferencesSection": "Preferences",
+    "languageLabel": "Language",
+    "themeLabel": "Theme",
+    "weekStartsOnLabel": "Week starts on",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "settingUp": "Setting up...",
+    "getStarted": "Get Started",
+    "errors": {
+        "nameRequired": "Please enter your name",
+        "pastDate": "Please enter a valid past date"
+    }
+}

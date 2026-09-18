@@ -1,0 +1,80 @@
+{
+    "app": {
+        "name": "یادآور دارو"
+    },
+    "home": {
+        "yesterday": "دیروز",
+        "today": "امروز",
+        "tomorrow": "فردا",
+        "taken": "مصرف شده",
+        "missed": "فراموش شده",
+        "missedToday": "فراموش‌شده‌های امروز",
+        "next": "بعدی",
+        "upcoming": "در ادامه روز",
+        "restOfToday": "بعدی‌های امروز",
+        "logs": "تاریخچه مصرف",
+        "history": "تاریخچه",
+        "todayLogs": "تاریخچه امروز",
+        "upcomingDays": "روزهای آینده",
+        "take": "مصرف",
+        "undo": "بازگشت",
+        "scheduledAt": "زمان مصرف",
+        "loggedAt": "ثبت در",
+        "noMeds": "دارویی برنامه‌ریزی نشده",
+        "noLogs": "هنوز مصرفی ثبت نشده",
+        "noMissed": "داروی فراموش‌شده‌ای وجود ندارد",
+        "noFutureMeds": "دارویی برای آینده برنامه‌ریزی نشده",
+        "endOfHistory": "به ابتدای داروهای فراموش‌شده رسیدید",
+        "swipeLeftToTake": "به چپ بکشید تا مصرف کنید",
+        "swipeRightToTake": "به راست بکشید تا مصرف کنید",
+        "swipeLeftToUndo": "به چپ بکشید تا بازگردانید",
+        "swipeRightToUndo": "به راست بکشید تا بازگردانید"
+    },
+    "settings": {
+        "title": "تنظیمات",
+        "appearance": "ظاهر",
+        "theme": "پوسته",
+        "language": "زبان",
+        "weekStartsOn": "شروع هفته از",
+        "light": "روشن",
+        "dark": "تاریک",
+        "system": "سیستم"
+    },
+    "actions": {
+        "save": "ذخیره",
+        "cancel": "انصراف",
+        "delete": "حذف",
+        "edit": "ویرایش",
+        "add": "افزودن",
+        "close": "بستن",
+        "back": "قبلی",
+        "next": "بعدی",
+        "selectDate": "انتخاب تاریخ",
+        "confirm": "تایید",
+        "clear": "پاک کردن"
+    },
+    "toast": {
+        "welcome": "خوش آمدید!",
+        "setupFailed": "خطا در تکمیل تنظیمات.",
+        "saved": "ذخیره شد",
+        "deleted": "حذف شد",
+        "error": "خطایی رخ داد"
+    },
+    "navigation": {
+        "home": "خانه",
+        "history": "تاریخچه",
+        "medicines": "داروها",
+        "profile": "پروفایل"
+    },
+    "profile": {
+        "greeting": "سلام، {{name}}",
+        "greetingFallback": "سلام، قهرمان!",
+        "nameFallback": "نام شما",
+        "yearsOld": "{{count}} ساله"
+    },
+    "install": {
+        "button": "نصب",
+        "title": "نصب برنامه",
+        "gotIt": "متوجه شدم"
+    }
+}

@@ -1,0 +1,299 @@
+@import "tailwindcss";
+
+/* =========================================
+   1. FONT FACES
+   ========================================= */
+
+/* Poppins (English) */
+@font-face {
+    font-family: "Poppins";
+    src: url("/fonts/Poppins-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Poppins";
+    src: url("/fonts/Poppins-Medium.woff2") format("woff2");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Poppins";
+    src: url("/fonts/Poppins-SemiBold.woff2") format("woff2");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Poppins";
+    src: url("/fonts/Poppins-Bold.woff2") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Vazirmatn (Persian) */
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/fonts/Vazirmatn-RD-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/fonts/Vazirmatn-RD-Medium.woff2") format("woff2");
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/fonts/Vazirmatn-RD-SemiBold.woff2") format("woff2");
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("/fonts/Vazirmatn-RD-Bold.woff2") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
+
+    /* Custom Sidebar Color */
+    --color-sidebar: var(--sidebar-background);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+
+    /* Default font is Poppins */
+    --font-sans:
+        "Poppins", "Vazirmatn", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+        sans-serif;
+
+    --animate-skeleton-shimmer: skeleton-shimmer 1.5s ease-in-out infinite;
+
+    @keyframes skeleton-shimmer {
+        100% {
+            transform: translateX(200%);
+        }
+    }
+}
+
+:root {
+    --background: hsl(0 0% 100%);
+    --foreground: hsl(240 10% 3.9%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(240 10% 3.9%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(240 10% 3.9%);
+    --primary: var(--app-primary);
+    --primary-foreground: hsl(0 0% 100%);
+    --secondary: hsl(240 4.8% 95.9%);
+    --secondary-foreground: hsl(240 5.9% 10%);
+    --muted: hsl(240 5.9% 90%);
+    --muted-foreground: hsl(240 3.8% 46.1%);
+    --accent: hsl(240 4.8% 95.9%);
+    --accent-foreground: hsl(240 5.9% 10%);
+    --destructive: hsl(346.8 77.2% 49.8%);
+    --destructive-foreground: hsl(0 0% 100%);
+    --success: hsl(85 85% 35%);
+    --success-foreground: hsl(0 0% 100%);
+    --warning: hsl(37 90% 61%);
+    --warning-foreground: hsl(0 0% 0%);
+    --border: hsl(240, 0.7%, 73.1%);
+    --input: hsl(240 5.9% 90%);
+    --ring: var(--app-primary);
+    --sidebar-background: hsl(0 0% 98%);
+    --sidebar-foreground: hsl(240 10% 3.9%);
+    --radius: 0.5rem;
+    --app-blur: 4px;
+    --app-primary: hsl(224, 94%, 63%);
+
+    font-family: var(--font-sans);
+}
+
+.dark {
+    --background: hsl(240 10% 3.9%);
+    --foreground: hsl(0 0% 98%);
+    --card: hsl(240 10% 3.9%);
+    --card-foreground: hsl(0 0% 98%);
+    --popover: hsl(240 10% 3.9%);
+    --popover-foreground: hsl(0 0% 98%);
+    --primary: var(--app-primary-dark);
+    --primary-foreground: hsl(0 0% 100%);
+    --secondary: hsl(240 3.7% 15.9%);
+    --secondary-foreground: hsl(0 0% 98%);
+    --muted: hsl(240 5.9% 10%);
+    --muted-foreground: hsl(240 5% 64.9%);
+    --accent: hsl(240 3.7% 15.9%);
+    --accent-foreground: hsl(0 0% 98%);
+    --destructive: hsl(349.7 89.2% 60.2%);
+    --destructive-foreground: hsl(0 0% 100%);
+    --success: hsl(84 81% 44%);
+    --success-foreground: hsl(0 0% 100%);
+    --warning: hsl(42 91% 50%);
+    --warning-foreground: hsl(0 0% 100%);
+    --border: hsl(240, 1%, 36.5%);
+    --input: hsl(240 3.7% 15.9%);
+    --ring: var(--app-primary-dark);
+    --sidebar-background: hsl(240 5.9% 10%);
+    --sidebar-foreground: hsl(0 0% 98%);
+    --app-primary-dark: hsl(224, 94%, 63%);
+}
+
+html,
+body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+}
+
+/* ✅ 1. When the HTML tag is Farsi, prioritize Vazirmatn */
+:root[lang="fa"] {
+    --font-sans: "Vazirmatn", "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ✅ 2. Enable Stylistic Set 1 (ss01) for Farsi */
+/* Vazirmatn uses "ss01" to automatically convert Latin numerals to Persian numerals */
+html[lang="fa"] {
+    font-feature-settings: "ss01";
+}
+
+@utility flex-center { @apply flex justify-center items-center; }
+@utility flex-center-between { @apply flex justify-between items-center; }
+@utility flex-row-center { @apply flex flex-row items-center; }
+@utility dir-ltr { direction: ltr; }
+@utility dir-rtl { direction: rtl; }
+@utility app-blur { backdrop-filter: blur(var(--app-blur)); }
+
+html { scroll-behavior: smooth; }
+button { @apply cursor-pointer; }
+
+.scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+.app_gradient { @apply bg-linear-to-b from-background/30 to-background/60; }
+.app_container { @apply rounded-3xl transition-colors duration-200 shadow-[inset_0_1px_1px_rgba(255,255,255,1),inset_0_0_20px_rgba(255,255,255,1)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.22),inset_0_0_20px_rgba(255,255,255,0.16)]; }
+
+.responsive-text { font-size: var(--size-base); }
+@media (min-width: 640px) { .responsive-text { font-size: var(--size-sm, var(--size-base)); } }
+@media (min-width: 768px) { .responsive-text { font-size: var(--size-md, var(--size-sm, var(--size-base))); } }
+@media (min-width: 1024px) { .responsive-text { font-size: var(--size-lg, var(--size-md, var(--size-sm, var(--size-base)))); } }
+@media (min-width: 1280px) { .responsive-text { font-size: var(--size-xl, var(--size-lg, var(--size-md, var(--size-sm, var(--size-base))))); } }
+@media (min-width: 1536px) { .responsive-text { font-size: var(--size-2xl, var(--size-xl, var(--size-lg, var(--size-md, var(--size-sm, var(--size-base)))))); } }
+
+@keyframes modal-sheet-in { from { transform: translate3d(0, 100%, 0); } to { transform: translate3d(0, 0, 0); } }
+@keyframes modal-sheet-out { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 100%, 0); } }
+@keyframes modal-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modal-backdrop-out { from { opacity: 1; } to { opacity: 0; } }
+
+.animate-modal-sheet-in { animation: modal-sheet-in 250ms ease-out both; }
+.animate-modal-sheet-out { animation: modal-sheet-out 250ms ease-out both; }
+.animate-modal-backdrop-in { animation: modal-backdrop-in 250ms ease-out both; }
+.animate-modal-backdrop-out { animation: modal-backdrop-out 250ms ease-out both; }
+
+@keyframes toast-slide-in { from { transform: translateX(120%) scale(0.8); } to { transform: translateX(0) scale(1); } }
+@keyframes toast-slide-out { from { transform: translateX(0) scale(1); } to { transform: translateX(120%) scale(0.8); } }
+@keyframes toast-push-back {
+    0% { transform: translateX(0) translateY(0) scale(1); }
+    40% { transform: translateX(-14px) translateY(0) scale(0.95); }
+    100% { transform: translateX(18px) translateY(0) scale(0.8); }
+}
+@keyframes toast-pull-front {
+    0% { transform: translateX(18px) translateY(0) scale(0.8); }
+    60% { transform: translateX(-4px) translateY(-2px) scale(1.02); }
+    100% { transform: translateX(0) translateY(0) scale(1); }
+}
+
+@keyframes toast-slide-in-rtl { from { transform: translateX(-120%) scale(0.8); } to { transform: translateX(0) scale(1); } }
+@keyframes toast-slide-out-rtl { from { transform: translateX(0) scale(1); } to { transform: translateX(-120%) scale(0.8); } }
+@keyframes toast-push-back-rtl {
+    0% { transform: translateX(0) translateY(0) scale(1); }
+    40% { transform: translateX(14px) translateY(0) scale(0.95); }
+    100% { transform: translateX(-18px) translateY(0) scale(0.8); }
+}
+@keyframes toast-pull-front-rtl {
+    0% { transform: translateX(-18px) translateY(0) scale(0.8); }
+    60% { transform: translateX(4px) translateY(-2px) scale(1.02); }
+    100% { transform: translateX(0) translateY(0) scale(1); }
+}
+
+@utility pt-safe { padding-top: env(safe-area-inset-top); }
+@utility pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+@utility pl-safe { padding-left: env(safe-area-inset-left); }
+@utility pr-safe { padding-right: env(safe-area-inset-right); }
+@utility px-safe { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+@utility py-safe { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+@utility p-safe { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+@utility pt-safe-offset-4 { padding-top: calc(env(safe-area-inset-top) + 1rem); }
+@utility pb-safe-offset-4 { padding-bottom: calc(env(safe-area-inset-bottom) + 1rem); }
+@utility pt-safe-offset-8 { padding-top: calc(env(safe-area-inset-top) + 2rem); }
+@utility pb-safe-offset-8 { padding-bottom: calc(env(safe-area-inset-bottom) + 2rem); }
+@utility mt-safe { margin-top: env(safe-area-inset-top); }
+@utility mb-safe { margin-bottom: env(safe-area-inset-bottom); }
+@utility top-safe { top: env(safe-area-inset-top); }
+@utility bottom-safe { bottom: env(safe-area-inset-bottom); }
+@utility top-safe-offset-4 { top: calc(env(safe-area-inset-top) + 1rem); }
+@utility top-safe-offset-5 { top: calc(env(safe-area-inset-top) + 1.25rem); }
+@utility top-safe-offset-6 { top: calc(env(safe-area-inset-top) + 1.5rem); }
+@utility bottom-safe-offset-4 { bottom: calc(env(safe-area-inset-bottom) + 1rem); }
+
+.rdp-custom .rdp-month_caption { display: none !important; }
+.rdp-custom .rdp-months { width: 100%; }
+.rdp-custom .rdp-month { width: 100%; }
+.rdp-custom .rdp-month_grid { width: 100% !important; border-spacing: 0; border-collapse: collapse; table-layout: fixed; }
+.rdp-custom .rdp-weekdays { width: 100%; }
+.rdp-custom .rdp-weekday { text-align: center; text-transform: uppercase; font-size: 0.75rem; color: var(--muted-foreground); font-weight: 500; padding-bottom: 0.5rem; }
+.rdp-custom .rdp-week { width: 100%; }
+.rdp-custom .rdp-day { text-align: center; padding: 2px; height: 44px; }
+.rdp-custom .rdp-day_button { width: 40px; height: 40px; border-radius: 9999px; font-weight: 500; font-size: 0.875rem; transition: all 0.2s; color: var(--foreground); margin: 0 auto; background: transparent; border: none; cursor: pointer; }
+.rdp-custom .rdp-day_button:hover:not([disabled]):not(.rdp-day_selected) { background-color: hsl(var(--primary) / 0.1); color: hsl(var(--primary)); }
+.rdp-custom .rdp-day_selected .rdp-day_button { background-color: hsl(var(--primary)) !important; color: hsl(var(--primary-foreground)) !important; font-weight: 600; }
+.rdp-custom .rdp-day_today .rdp-day_button { border: 1px solid hsl(var(--primary) / 0.5); font-weight: 700; }
+.rdp-custom .rdp-day_disabled .rdp-day_button, .rdp-custom .rdp-day_button:disabled { color: var(--muted-foreground); opacity: 0.4; cursor: not-allowed; }
+.rdp-custom .rdp-day_outside .rdp-day_button { opacity: 0.3; }

@@ -1,0 +1,80 @@
+{
+    "app": {
+        "name": "Meds Reminder"
+    },
+    "home": {
+        "yesterday": "Yesterday",
+        "today": "Today",
+        "tomorrow": "Tomorrow",
+        "taken": "Taken",
+        "missed": "Missed",
+        "missedToday": "Missed today",
+        "next": "Next",
+        "upcoming": "Upcoming",
+        "restOfToday": "Later today",
+        "logs": "History",
+        "history": "History",
+        "todayLogs": "Today's history",
+        "upcomingDays": "Upcoming Days",
+        "take": "Take",
+        "undo": "Undo",
+        "scheduledAt": "Scheduled",
+        "loggedAt": "Logged",
+        "noMeds": "No medicines scheduled",
+        "noLogs": "No medicine history yet",
+        "noMissed": "No missed medicines",
+        "noFutureMeds": "No future medicines scheduled",
+        "endOfHistory": "You've reached the beginning of your missed medicines",
+        "swipeLeftToTake": "Swipe left to take",
+        "swipeRightToTake": "Swipe right to take",
+        "swipeLeftToUndo": "Swipe left to undo",
+        "swipeRightToUndo": "Swipe right to undo"
+    },
+    "settings": {
+        "title": "Settings",
+        "appearance": "Appearance",
+        "theme": "Theme",
+        "language": "Language",
+        "weekStartsOn": "Week starts on",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+    },
+    "actions": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "add": "Add",
+        "close": "Close",
+        "back": "Back",
+        "next": "Next",
+        "selectDate": "Select Date",
+        "confirm": "Confirm",
+        "clear": "Clear"
+    },
+    "toast": {
+        "welcome": "Welcome!",
+        "setupFailed": "Failed to complete setup.",
+        "saved": "Saved",
+        "deleted": "Deleted",
+        "error": "An error occurred"
+    },
+    "navigation": {
+        "home": "Home",
+        "history": "History",
+        "medicines": "Medicines",
+        "profile": "Profile"
+    },
+    "profile": {
+        "greeting": "Hey, {{name}}",
+        "greetingFallback": "Hey, Champ!",
+        "nameFallback": "Your Name",
+        "yearsOld": "{{count}} years old"
+    },
+    "install": {
+        "button": "Install",
+        "title": "Install App",
+        "gotIt": "Got it"
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "welcomeTitle": "به یادآور دارو خوش آمدید",
+    "welcomeSubtitle": "بیایید تجربه شما را شخصی‌سازی کنیم.",
+    "profileSection": "پروفایل شما",
+    "nameLabel": "شما را چه صدا بزنیم؟",
+    "namePlaceholder": "مثلاً علی",
+    "birthdateLabel": "تاریخ تولد شما",
+    "birthdatePlaceholder": "تاریخ تولد خود را انتخاب کنید",
+    "preferencesSection": "تنظیمات",
+    "languageLabel": "زبان",
+    "themeLabel": "پوسته",
+    "weekStartsOnLabel": "شروع هفته از",
+    "light": "روشن",
+    "dark": "تاریک",
+    "system": "سیستم",
+    "settingUp": "در حال تنظیم...",
+    "getStarted": "شروع کنیم",
+    "errors": {
+        "nameRequired": "لطفاً نام خود را وارد کنید",
+        "pastDate": "لطفاً یک تاریخ معتبر در گذشته وارد کنید"
+    }
+}

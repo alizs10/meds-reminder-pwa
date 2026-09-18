@@ -1,0 +1,17 @@
+{
+    "title": "Profile",
+    "name": "Name",
+    "namePlaceholder": "Enter your name",
+    "birthdate": "Birthdate",
+    "age": "Age",
+    "yearsOld": "years old",
+    "saveChanges": "Save Changes",
+    "removeAvatar": "Remove Avatar?",
+    "removeAvatarDesc": "Are you sure you want to remove your profile picture? This action cannot be undone.",
+    "yourName": "Your Name",
+    "errors": {
+        "nameRequired": "Name is required",
+        "nameTooLong": "Name is too long",
+        "invalidBirthdate": "Invalid birthdate"
+    }
+}
