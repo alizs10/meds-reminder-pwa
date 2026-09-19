@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import { useDrag } from "@use-gesture/react";
 import { motion } from "framer-motion";
 import { useIsRTL } from "@/hooks/useIsRTL";
+import { useSettingsStore } from "@/stores/useSettingsStore"; // ✅ Added to check language
 
 interface WeeklyCalendarProps {
     weekDates: Date[];
@@ -25,6 +26,8 @@ export default function WeeklyCalendar({
     getDateLabel,
 }: WeeklyCalendarProps) {
     const isRTL = useIsRTL();
+    const language = useSettingsStore((s) => s.settings.language);
+    const isFa = language === "fa"; // ✅ Check if language is Farsi
 
     const [weekIndex, setWeekIndex] = useState(1);
     const [dragX, setDragX] = useState(0);
@@ -34,8 +37,6 @@ export default function WeeklyCalendar({
     const [slideWidth, setSlideWidth] = useState(0);
     const [isReady, setIsReady] = useState(false);
 
-    // ✅ FIX: In RTL, Next Week is visually on the Left (index 0), Prev Week is on the Right (index 2).
-    // In LTR, Prev Week is on the Left (index 0), Next Week is on the Right (index 2).
     const weeks = useMemo(() => {
         const prevWeek = weekDates.map((d) => subDays(d, 7));
         const nextWeek = weekDates.map((d) => addDays(d, 7));
@@ -80,17 +81,13 @@ export default function WeeklyCalendar({
                 const atStart = weekIndex === 0;
                 const atEnd = weekIndex === 2;
 
-                // Rubber-band resistance at the edges
                 const pullingOut = (atStart && mx > 0) || (atEnd && mx < 0);
                 if (pullingOut) x = mx * 0.3;
                 setDragX(x);
             } else {
                 const threshold = 50;
 
-                // Purely spatial logic: 
-                // Swipe left (mx < 0) reveals the right side (index + 1)
                 const revealRight = mx < -threshold || (dx === -1 && vx > 0.5);
-                // Swipe right (mx > 0) reveals the left side (index - 1)
                 const revealLeft = mx > threshold || (dx === 1 && vx > 0.5);
 
                 if (revealRight) setWeekIndex((i) => Math.min(2, i + 1));
@@ -106,7 +103,7 @@ export default function WeeklyCalendar({
         },
     );
 
-    const gap = 8; // gap between slides in px
+    const gap = 8;
     const targetX = -weekIndex * (slideWidth - gap / 2) + dragX;
 
     return (
@@ -125,8 +122,6 @@ export default function WeeklyCalendar({
                         style={{ touchAction: "pan-y" }}
                     >
                         {weeks.map((week, weekIdx) => {
-                            // ✅ In RTL, reverse the days inside the week so Saturday is on the Right
-                            // and Friday is on the Left, matching native RTL calendar reading order.
                             const displayWeek = isRTL ? [...week].reverse() : week;
 
                             return (
@@ -134,6 +129,11 @@ export default function WeeklyCalendar({
                                     {displayWeek.map((date) => {
                                         const isSelected = isSameDay(date, selectedDate);
                                         const isTodayDate = isSameDay(date, currentToday);
+
+                                        // ✅ FIX: Use Shamsi day number for Farsi, Gregorian for English
+                                        const dayNumber = isFa
+                                            ? new Intl.DateTimeFormat('fa-IR-u-ca-persian', { day: 'numeric' }).format(date)
+                                            : getDateLabel(date);
 
                                         return (
                                             <Button
@@ -160,7 +160,7 @@ export default function WeeklyCalendar({
                                                         isSelected ? "text-primary" : "text-foreground"
                                                     )}
                                                 >
-                                                    {getDateLabel(date)}
+                                                    {dayNumber}
                                                 </Typography>
                                                 {isTodayDate && !isSelected && (
                                                     <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 size-1 rounded-full bg-primary" />
