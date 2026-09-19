@@ -9,6 +9,7 @@
     "removeAvatar": "حذف تصویر پروفایل؟",
     "removeAvatarDesc": "آیا مطمئن هستید که می‌خواهید تصویر پروفایل خود را حذف کنید؟ این عمل قابل بازگشت نیست.",
     "yourName": "نام شما",
+    "birthdatePlaceholder": "انتخاب تاریخ تولد",
     "errors": {
         "nameRequired": "نام الزامی است",
         "nameTooLong": "نام بیش از حد طولانی است",

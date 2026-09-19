@@ -12,6 +12,7 @@ export default function HomeScreen() {
         isTodaySelected,
         weekDates,
         selectedDate,
+        currentToday, // ✅ Make sure this is destructured
         getShortDayLabel,
         getDateLabel,
         logsForSelectedDay,
@@ -23,7 +24,6 @@ export default function HomeScreen() {
         setSelectedDate,
         logDose,
         unlogDose,
-        currentToday
     } = useMedicineSchedule();
 
     const hasData =
@@ -37,10 +37,10 @@ export default function HomeScreen() {
             <WeeklyCalendar
                 weekDates={weekDates}
                 selectedDate={selectedDate}
+                currentToday={currentToday}
                 onSelectDate={setSelectedDate}
                 getShortDayLabel={getShortDayLabel}
                 getDateLabel={getDateLabel}
-                currentToday={currentToday} // ✅ Added
             />
 
             <div className="flex flex-col gap-y-0.5 px-5 py-4">
@@ -48,39 +48,40 @@ export default function HomeScreen() {
                     <HomeSkeleton />
                 ) : (
                     <>
-                        {/* 1. Missed Section */}
                         <ScheduleSection
                             title={t("home.missed")}
                             variant="destructive"
                             dateStr={selectedDateStr}
                             items={missedForSelectedDay}
                             showAction
+                            currentToday={currentToday} // ✅ Added
                             onTake={logDose}
                             onUndo={unlogDose}
                         />
 
-                        {/* 2. Next Section — ✅ Now visible for ANY day with upcoming items */}
-                        <ScheduleSection
-                            title={t("home.next")}
-                            variant="warning"
-                            dateStr={selectedDateStr}
-                            items={nextForSelectedDay}
-                            showAction
-                            onTake={logDose}
-                            onUndo={unlogDose}
-                        />
+                        {isTodaySelected && (
+                            <ScheduleSection
+                                title={t("home.next")}
+                                variant="warning"
+                                dateStr={selectedDateStr}
+                                items={nextForSelectedDay}
+                                showAction
+                                currentToday={currentToday} // ✅ Added
+                                onTake={logDose}
+                                onUndo={unlogDose}
+                            />
+                        )}
 
-                        {/* 3. Later / Upcoming Section */}
                         <ScheduleSection
                             title={isTodaySelected ? t("home.restOfToday") : t("home.upcoming")}
                             dateStr={selectedDateStr}
                             items={laterForSelectedDay}
                             showAction
+                            currentToday={currentToday} // ✅ Added
                             onTake={logDose}
                             onUndo={unlogDose}
                         />
 
-                        {/* 4. Logs Section */}
                         <ScheduleSection
                             title={t("home.logs")}
                             variant="secondary"
@@ -88,6 +89,7 @@ export default function HomeScreen() {
                             items={logsForSelectedDay}
                             isLogs
                             showAction
+                            currentToday={currentToday} // ✅ Added
                             onUndo={unlogDose}
                         />
 

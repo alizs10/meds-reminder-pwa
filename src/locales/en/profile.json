@@ -9,6 +9,7 @@
     "removeAvatar": "Remove Avatar?",
     "removeAvatarDesc": "Are you sure you want to remove your profile picture? This action cannot be undone.",
     "yourName": "Your Name",
+    "birthdatePlaceholder": "Select your birthdate",
     "errors": {
         "nameRequired": "Name is required",
         "nameTooLong": "Name is too long",

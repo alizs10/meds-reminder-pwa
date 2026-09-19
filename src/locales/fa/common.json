@@ -76,5 +76,14 @@
         "button": "نصب",
         "title": "نصب برنامه",
         "gotIt": "متوجه شدم"
+    },
+    "cropper": {
+        "cropAvatar": "برش پروفایل",
+        "cropAndEdit": "برش و ویرایش",
+        "zoom": "بزرگ‌نمایی",
+        "grayscale": "سیاه و سفید",
+        "saving": "در حال ذخیره...",
+        "savePhoto": "ذخیره تصویر",
+        "loadingImage": "در حال بارگذاری تصویر..."
     }
 }

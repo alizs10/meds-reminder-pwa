@@ -21,7 +21,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
                         className={cn(
                             "shadow-[inset_0_1px_1px_rgba(255,255,255,1),inset_0_0_20px_rgba(255,255,255,1)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.22),inset_0_0_20px_rgba(255,255,255,0.16)]",
                             "bg-background/50 app-blur flex-1 w-full rounded-3xl px-5 py-3",
-                            "focus:ring-0 focus:outline-0 text-sm text-foreground placeholder:text-foreground",
+                            "focus:ring-0 focus:outline-0 text-sm text-foreground placeholder:text-muted-foreground",
                             "transition-colors duration-200 appearance-none",
                             "[&::-webkit-calendar-picker-indicator]:hidden",
                             "[&::-webkit-calendar-picker-indicator]:appearance-none",

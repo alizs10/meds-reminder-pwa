@@ -52,7 +52,7 @@ export default function Dropdown<T extends string | number>({
                         variant={triggerVariant}
                         size={hideLabel ? "icon-sm" : "sm"}
                         className="h-full py-0"
-                        rightIcon={
+                        leftIcon={
                             !icon ? <Select.Icon className="transition-transform duration-200 data-popup-open:rotate-180">
                                 <IconChevronDown className="size-4" />
                             </Select.Icon>

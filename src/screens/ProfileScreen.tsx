@@ -8,7 +8,8 @@ import Skeleton from "@/components/ui/Skeleton";
 import { useProfileStore } from "@/stores/useProfileStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IconArrowLeft, IconArrowRight, IconCheck, IconPencil, IconPhotoPlus, IconTrash, IconUser } from "@tabler/icons-react";
-import { useMemo, useRef, useState } from "react";
+// ✅ Added useCallback
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { toast } from "@/stores/useToastStore";
@@ -43,15 +44,41 @@ export default function ProfileScreen() {
         },
     });
 
+    // ✅ FIX: Wrapped in useCallback to stabilize the reference for useMemo
+    const onSubmit = useCallback(async (data: ProfileFormValues) => {
+        try {
+            const birthdateISO = new Date(data.birthdate).toISOString();
+            await updateProfile({ name: data.name, birthdate: birthdateISO });
+            toast(tCommon("toast.saved"), <IconCheck className="size-4 text-success" />);
+        } catch (error) {
+            console.error("Failed to save profile:", error);
+        }
+    }, [updateProfile, tCommon]);
+
     const profileScreenHeader = useMemo(() => ({
         title: t("title"),
         icon: <IconUser className="size-5" />,
-        action: <Link className="h-full" to="/">
-            <Button className="h-full" size="icon-sm" variant="primary">
-                {isRTL ? (<IconArrowRight className="size-5" />) : (<IconArrowLeft className="size-5" />)}
+        action: (
+            <Link className="h-full" to="/">
+                <Button className="h-full" size="icon-sm" variant="primary">
+                    {isRTL ? (<IconArrowRight className="size-5" />) : (<IconArrowLeft className="size-5" />)}
+                </Button>
+            </Link>
+        ),
+        // ✅ Added Save Button to trailingAction. 
+        // It only renders when the form has unsaved changes (isDirty).
+        trailingAction: isDirty ? (
+            <Button
+                className="h-full"
+                size="icon-sm"
+                variant="primary"
+                onClick={handleSubmit(onSubmit)}
+                disabled={isLoading}
+            >
+                <IconCheck className="size-5" />
             </Button>
-        </Link>
-    }), [isRTL, t]);
+        ) : null
+    }), [isRTL, t, isDirty, isLoading, handleSubmit, onSubmit]);
 
     useCustomHeader(profileScreenHeader);
 
@@ -84,16 +111,6 @@ export default function ProfileScreen() {
             console.error("Failed to delete avatar:", error);
         }
         setIsDeleteModalOpen(false);
-    };
-
-    const onSubmit = async (data: ProfileFormValues) => {
-        try {
-            const birthdateISO = new Date(data.birthdate).toISOString();
-            await updateProfile({ name: data.name, birthdate: birthdateISO });
-            toast(tCommon("toast.saved"), <IconCheck className="size-4 text-success" />);
-        } catch (error) {
-            console.error("Failed to save profile:", error);
-        }
     };
 
     const age = calculateAge();
@@ -167,7 +184,7 @@ export default function ProfileScreen() {
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
                     <Typography variant="sm" weight="medium">{t("name")}</Typography>
-                    <TextInput {...register("name")} placeholder={t("namePlaceholder")} error={errors.name?.message} />
+                    <TextInput {...register("name")} placeholder={t("namePlaceholder")} error={errors.name?.message ? t(errors.name.message) : undefined} />
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -179,7 +196,8 @@ export default function ProfileScreen() {
                             <DatePickerInput
                                 value={field.value}
                                 onChange={field.onChange}
-                                error={errors.birthdate?.message}
+                                placeholder={t("birthdatePlaceholder")}
+                                error={errors.birthdate?.message ? t(errors.birthdate.message) : undefined}
                             />
                         )}
                     />
@@ -188,9 +206,7 @@ export default function ProfileScreen() {
                     )}
                 </div>
 
-                <Button type="submit" variant="primary-active" size="lg" disabled={!isDirty || isLoading} rightIcon={<IconCheck className="size-5" />}>
-                    <Typography variant="md" weight="bold">{t("saveChanges")}</Typography>
-                </Button>
+                {/* ✅ Removed the large Save Changes button from the bottom of the form */}
             </form>
 
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarSelect} className="hidden" />

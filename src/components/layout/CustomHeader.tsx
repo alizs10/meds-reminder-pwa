@@ -6,20 +6,33 @@ interface CustomHeaderProps {
     title: string;
     icon?: ReactNode;
     action?: ReactNode;
+    trailingAction?: ReactNode; // ✅ Added for the right-side action
   };
 }
 
 export default function CustomHeader({ header }: CustomHeaderProps) {
   return (
-    <div className="fixed inset-x-0 top-safe-offset-4 bottom-auto flex-1 w-full h-12 max-h-12 flex-row-center gap-x-3 px-5 max-w-lg mx-auto">
-      {header.action && header.action}
-      <div className="flex-row-center gap-x-2 app_container app_gradient app-blur h-full px-6">
-        {header.icon && header.icon}
+    <div className="fixed inset-x-0 top-safe-offset-4 bottom-auto flex-1 w-full h-12 max-h-12 flex-row-center gap-x-3 px-5 max-w-lg mx-auto flex-center-between">
 
-        <Typography variant="lg" weight="medium">
-          {header.title}
-        </Typography>
+      <div className="flex-row-center gap-x-3 h-full">
+
+
+        {header.action && header.action}
+        <div className="flex-row-center gap-x-2 app_container app_gradient app-blur h-full px-6">
+          {header.icon && header.icon}
+
+          <Typography variant="lg" weight="medium">
+            {header.title}
+          </Typography>
+        </div>
       </div>
+
+      {/* Right Group (or Left in RTL): Trailing Action */}
+      {header.trailingAction && (
+        <div className="shrink-0 h-full">
+          {header.trailingAction}
+        </div>
+      )}
     </div>
   );
 }

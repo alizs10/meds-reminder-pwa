@@ -3,14 +3,13 @@
 
 <head>
   <meta charset="UTF-8" />
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 
   <title>Meds Reminder</title>
-
   <meta name="description" content="A simple medication reminder and tracking app." />
 
-  <meta name="theme-color" content="#5e45e5" />
+  <meta name="theme-color" content="#4877f9" />
 
   <meta name="mobile-web-app-capable" content="yes" />
 
@@ -23,6 +22,37 @@
   <link rel="shortcut icon" href="/favicon.ico" />
 
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+  <!-- ✅ ZERO-FLASH THEME & RTL SCRIPT -->
+  <script>
+    (function () {
+      try {
+        const storageKey = 'meds-reminder-settings';
+        const stored = localStorage.getItem(storageKey);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const settings = parsed?.state?.settings;
+          if (settings) {
+            // 1. Apply Theme before first paint
+            const theme = settings.theme;
+            const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (isDark) {
+              document.documentElement.classList.add('dark');
+            }
+
+            // 2. Apply Language & Direction (Bonus: prevents RTL/LTR layout flash!)
+            const lang = settings.language;
+            if (lang) {
+              document.documentElement.lang = lang;
+              document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
+            }
+          }
+        }
+      } catch (e) {
+        // Fail silently, React will fallback to defaults
+      }
+    })();
+  </script>
 </head>
 
 <body>

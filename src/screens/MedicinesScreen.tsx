@@ -2,7 +2,6 @@ import Dropdown from "@/components/ui/Dropdown";
 import { Typography } from "@/components/ui/Typography";
 import Button from "@/components/ui/Button";
 import MedicineCard from "@/components/medicines/MedicineCard";
-// ✅ Import the two separate modals
 import AddMedicineModal from "@/components/medicines/AddMedicineModal";
 import EditMedicineModal from "@/components/medicines/EditMedicineModal";
 import ConfirmDialog from "@/components/ui/Dialog";
@@ -12,7 +11,8 @@ import TextInput from "@/components/ui/TextInput";
 import { useMedicineStore } from "@/stores/useMedicineStore";
 import type { Medicine } from "@/db";
 
-import { useMemo, useState } from "react";
+// ✅ Added useCallback to imports
+import { useCallback, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useIsRTL } from "@/hooks/useIsRTL";
@@ -44,8 +44,17 @@ export default function MedicinesScreen() {
     const [search, setSearch] = useState("");
     const [filter, setFilter] = useState<"all" | "active" | "paused">("all");
 
-    const handleAdd = () => { setEditingMedicine(null); setIsModalOpen(true); };
-    const handleEdit = (medicine: Medicine) => { setEditingMedicine(medicine); setIsModalOpen(true); };
+    // ✅ FIX: Wrapped in useCallback to prevent the useMemo dependencies 
+    // from changing on every render, silencing the React warning.
+    const handleAdd = useCallback(() => {
+        setEditingMedicine(null);
+        setIsModalOpen(true);
+    }, []);
+
+    const handleEdit = (medicine: Medicine) => {
+        setEditingMedicine(medicine);
+        setIsModalOpen(true);
+    };
 
     const handleDeleteConfirm = async () => {
         if (deletingMedicine) {
@@ -57,12 +66,24 @@ export default function MedicinesScreen() {
     const medicinesScreenHeader = useMemo(() => ({
         title: t("title"),
         icon: <IconPill className="size-5" />,
-        action: <Link className="h-full" to="/">
-            <Button className="h-full" size="icon-sm" variant="primary">
-                {isRTL ? (<IconArrowRight className="size-5" />) : (<IconArrowLeft className="size-5" />)}
+        action: (
+            <Link className="h-full" to="/">
+                <Button className="h-full" size="icon-sm" variant="primary">
+                    {isRTL ? (<IconArrowRight className="size-5" />) : (<IconArrowLeft className="size-5" />)}
+                </Button>
+            </Link>
+        ),
+        trailingAction: (
+            <Button
+                className="h-full"
+                size="icon-sm"
+                variant="primary"
+                onClick={handleAdd}
+            >
+                <IconPlus className="size-5" />
             </Button>
-        </Link>
-    }), [isRTL, t]);
+        )
+    }), [isRTL, t, handleAdd]);
 
     useCustomHeader(medicinesScreenHeader);
 
@@ -115,21 +136,10 @@ export default function MedicinesScreen() {
                 />
             </div>
 
-            <div className="flex-center-between">
+            <div className="flex items-center">
                 <Typography variant="md" weight="semibold" className="text-muted-foreground">
                     {filteredMedicines.length} {filteredMedicines.length === 1 ? t("medicine_singular") : t("medicine_plural")}
                 </Typography>
-
-                <Button
-                    size="sm"
-                    variant="primary"
-                    leftIcon={<IconPlus className="size-4" />}
-                    onClick={handleAdd}
-                >
-                    <Typography variant="sm" weight="medium">
-                        {tCommon("actions.add")}
-                    </Typography>
-                </Button>
             </div>
 
             {isLoading ? (
@@ -173,7 +183,6 @@ export default function MedicinesScreen() {
                 </div>
             )}
 
-            {/* ✅ Conditionally render Add vs Edit Modal */}
             {isModalOpen && !editingMedicine && (
                 <AddMedicineModal open={isModalOpen} onClose={() => setIsModalOpen(false)} />
             )}

@@ -1,6 +1,6 @@
 import Badge from "@/components/ui/Badge";
-import type { DoseListItem, LogListItem } from "../types";
 import MedicineDoseItem from "./MedicineDoseItem";
+import type { DoseListItem, LogListItem } from "../types";
 
 interface ScheduleSectionProps {
     title: string;
@@ -9,6 +9,7 @@ interface ScheduleSectionProps {
     items: DoseListItem[] | LogListItem[];
     isLogs?: boolean;
     showAction: boolean;
+    currentToday?: Date; // ✅ Added
     onTake?: (medicineId: string, date: string, time: string) => Promise<void> | void;
     onUndo?: (medicineId: string, date: string, time: string) => Promise<void> | void;
 }
@@ -20,6 +21,7 @@ export default function ScheduleSection({
     items,
     isLogs = false,
     showAction,
+    currentToday, // ✅ Added
     onTake,
     onUndo,
 }: ScheduleSectionProps) {
@@ -41,6 +43,7 @@ export default function ScheduleSection({
                             status="taken"
                             showAction={showAction}
                             takenAt={log.createdAt}
+                            currentToday={currentToday} // ✅ Added
                             onUndo={onUndo}
                         />
                     ))
@@ -52,6 +55,7 @@ export default function ScheduleSection({
                             dateStr={dateStr}
                             status={item.status}
                             showAction={showAction}
+                            currentToday={currentToday} // ✅ Added
                             onTake={onTake}
                             onUndo={onUndo}
                         />

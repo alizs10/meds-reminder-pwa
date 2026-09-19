@@ -76,5 +76,14 @@
         "button": "Install",
         "title": "Install App",
         "gotIt": "Got it"
+    },
+    "cropper": {
+        "cropAvatar": "Crop Avatar",
+        "cropAndEdit": "Crop & Edit",
+        "zoom": "Zoom",
+        "grayscale": "Grayscale",
+        "saving": "Saving...",
+        "savePhoto": "Save Photo",
+        "loadingImage": "Loading image..."
     }
 }

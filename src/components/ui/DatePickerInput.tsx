@@ -8,34 +8,26 @@ import TextInput from "./TextInput";
 import { Typography } from "./Typography";
 import ModalHeader from "./modal/ModalHeader";
 import ModalWrapper from "./modal/ModalWrapper";
+import { useIsRTL } from "@/hooks/useIsRTL";
+import { useDrag } from "@use-gesture/react";
+import { motion, AnimatePresence } from "framer-motion";
 
-// ✅ Gregorian imports (react-day-picker & date-fns)
+// ✅ Gregorian imports
 import {
-    addMonths as addMonthsGreg,
-    addYears as addYearsGreg,
-    format as formatGregorian,
-    getMonth as getMonthGreg,
-    getYear as getYearGreg,
-    setMonth as setMonthGreg,
-    setYear as setYearGreg,
-    subMonths as subMonthsGreg,
-    subYears as subYearsGreg
+    addMonths as addMonthsGreg, addYears as addYearsGreg, format as formatGregorian,
+    getMonth as getMonthGreg, getYear as getYearGreg, setMonth as setMonthGreg,
+    setYear as setYearGreg, subMonths as subMonthsGreg, subYears as subYearsGreg
 } from "date-fns";
 import { enUS, faIR } from "date-fns/locale";
 import { DayPicker as DayPickerGregorian, type Matcher } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 
-// ✅ Jalali/Persian imports (@daypicker/persian & date-fns-jalali)
+// ✅ Jalali/Persian imports
 import { DayPicker as DayPickerPersian } from "@daypicker/persian";
 import {
-    addMonths as addMonthsJalali,
-    addYears as addYearsJalali,
-    getMonth as getMonthJalali,
-    getYear as getYearJalali,
-    setMonth as setMonthJalali,
-    setYear as setYearJalali,
-    subMonths as subMonthsJalali,
-    subYears as subYearsJalali
+    addMonths as addMonthsJalali, addYears as addYearsJalali, getMonth as getMonthJalali,
+    getYear as getYearJalali, setMonth as setMonthJalali, setYear as setYearJalali,
+    subMonths as subMonthsJalali, subYears as subYearsJalali
 } from "date-fns-jalali";
 
 const SHAMSI_MONTHS = ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"];
@@ -51,7 +43,6 @@ interface DatePickerInputProps {
     maxDate?: string;
 }
 
-// ✅ Universal interface for both CalendarDay implementations
 interface CustomDayButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     day: { date: Date };
     modifiers: Record<string, boolean>;
@@ -62,18 +53,13 @@ const CustomDayButton = ({ day, modifiers, className, ...buttonProps }: CustomDa
     const language = useSettingsStore((s) => s.settings.language);
     const isFa = language === "fa";
 
-    // Use Jalali format for Farsi numbers, Gregorian for English
     const dayNum = isFa
         ? new Intl.DateTimeFormat('fa-IR-u-nu-farsi', { day: 'numeric' }).format(dateObj)
         : formatGregorian(dateObj, "d");
 
     if (modifiers.selected) {
         return (
-            <Button
-                size="icon-sm"
-                variant="primary-active"
-                {...buttonProps}
-            >
+            <Button size="icon-sm" variant="primary-active" {...buttonProps}>
                 <Typography variant="sm" weight="bold">{dayNum}</Typography>
             </Button>
         );
@@ -103,8 +89,8 @@ export default function DatePickerInput({
     const { t } = useTranslation("common");
     const language = useSettingsStore((s) => s.settings.language);
     const isFa = language === "fa";
+    const isRTL = useIsRTL();
 
-    // ✅ Dynamically select the correct DayPicker and date functions
     const Picker = isFa ? DayPickerPersian : DayPickerGregorian;
     const addMonthsFn = isFa ? addMonthsJalali : addMonthsGreg;
     const subMonthsFn = isFa ? subMonthsJalali : subMonthsGreg;
@@ -120,6 +106,9 @@ export default function DatePickerInput({
     const [isOpen, setIsOpen] = useState(false);
     const [view, setView] = useState<'days' | 'months' | 'years'>('days');
 
+    // 1 = Next, -1 = Prev, 0 = Fade (View Toggle)
+    const [direction, setDirection] = useState(0);
+
     const parsedDate = useMemo(() => {
         if (!value) return undefined;
         const d = new Date(value + "T00:00:00");
@@ -133,12 +122,12 @@ export default function DatePickerInput({
         setTempDate(parsedDate);
         setCurrentMonth(parsedDate || new Date());
         setView('days');
+        setDirection(0);
         setIsOpen(true);
     };
 
     const handleConfirm = () => {
         if (tempDate) {
-            // Always output Gregorian YYYY-MM-DD for the database
             const year = tempDate.getFullYear();
             const month = String(tempDate.getMonth() + 1).padStart(2, "0");
             const day = String(tempDate.getDate()).padStart(2, "0");
@@ -165,7 +154,6 @@ export default function DatePickerInput({
     const displayValue = useMemo(() => {
         if (!parsedDate) return "";
         if (isFa) {
-            // e.g., "۳۱ شهریور ۱۴۰۵"
             return new Intl.DateTimeFormat('fa-IR-u-ca-persian', { day: 'numeric', month: 'long', year: 'numeric' }).format(parsedDate);
         }
         try {
@@ -176,23 +164,61 @@ export default function DatePickerInput({
     }, [parsedDate, value, isFa]);
 
     const handlePrev = () => {
+        setDirection(-1);
         if (view === 'days') setCurrentMonth(subMonthsFn(currentMonth, 1));
         else if (view === 'months') setCurrentMonth(subYearsFn(currentMonth, 1));
         else if (view === 'years') setCurrentMonth(subYearsFn(currentMonth, 24));
     };
 
     const handleNext = () => {
+        setDirection(1);
         if (view === 'days') setCurrentMonth(addMonthsFn(currentMonth, 1));
         else if (view === 'months') setCurrentMonth(addYearsFn(currentMonth, 1));
         else if (view === 'years') setCurrentMonth(addYearsFn(currentMonth, 24));
     };
 
+    const swipeBind = useDrag(
+        ({ active, movement: [mx], velocity: [vx], direction: [dx] }) => {
+            if (active) return;
+
+            const threshold = 50;
+
+            // ✅ FIX: Determine direction primarily from total movement (mx).
+            // This prevents the "finger jitter at the end of swipe" bug where `dx` 
+            // flips to the wrong direction right before release, breaking the animation.
+            let swipeDirection = 0;
+            if (mx < -threshold) swipeDirection = -1; // Physical Left
+            else if (mx > threshold) swipeDirection = 1; // Physical Right
+            else if (vx > 0.5 && dx !== 0) {
+                // Fallback to instantaneous direction (dx) only for fast, short flicks
+                swipeDirection = dx;
+            }
+
+            if (swipeDirection === 0) return;
+
+            if (isRTL) {
+                if (swipeDirection === -1) handlePrev();
+                if (swipeDirection === 1) handleNext();
+            } else {
+                if (swipeDirection === -1) handleNext();
+                if (swipeDirection === 1) handlePrev();
+            }
+        },
+        {
+            axis: "x",
+            filterTaps: true,
+            pointer: { touch: true },
+        }
+    );
+
     const handleYearSelect = (year: number) => {
+        setDirection(0);
         setCurrentMonth(setYearFn(currentMonth, year));
         setView('months');
     };
 
     const handleMonthSelect = (monthIndex: number) => {
+        setDirection(0);
         setCurrentMonth(setMonthFn(currentMonth, monthIndex));
         setView('days');
     };
@@ -213,13 +239,32 @@ export default function DatePickerInput({
             const y = getYearFn(currentMonth);
             const start = y - 12;
             if (isFa) {
-                // ✅ FIX: Added { useGrouping: false }
                 const faNum = (n: number) => new Intl.NumberFormat('fa-IR', { useGrouping: false }).format(n);
                 return `${faNum(start)} - ${faNum(start + 23)}`;
             }
             return `${start} - ${start + 23}`;
         }
     }, [view, currentMonth, isFa, getYearFn]);
+
+    // ✅ FIX: Use getTime() to guarantee the key is 100% unique for every single month,
+    // preventing edge cases where Jalali/Gregorian month boundaries overlap.
+    const viewKey = `${view}-${currentMonth.getTime()}`;
+
+    const swipeVariants = {
+        enter: (dir: number) => {
+            if (dir === 0) return { x: "0%", opacity: 0 };
+            const isNext = dir === 1;
+            const enterFromRight = isRTL ? !isNext : isNext;
+            return { x: enterFromRight ? "100%" : "-100%", opacity: 1 };
+        },
+        center: { x: 0, opacity: 1 },
+        exit: (dir: number) => {
+            if (dir === 0) return { x: "0%", opacity: 0 };
+            const isNext = dir === 1;
+            const exitToRight = isRTL ? isNext : !isNext;
+            return { x: exitToRight ? "100%" : "-100%", opacity: 1 };
+        },
+    };
 
     return (
         <>
@@ -231,8 +276,7 @@ export default function DatePickerInput({
                 className={`cursor-pointer pe-10 ${className || ""}`}
                 error={error}
                 disabled={disabled}
-            >
-            </TextInput>
+            />
 
             <ModalWrapper open={isOpen} onClose={() => setIsOpen(false)}>
                 <ModalHeader title={t("actions.selectDate")} onClose={() => setIsOpen(false)} />
@@ -244,12 +288,15 @@ export default function DatePickerInput({
                         </Button>
 
                         <Button
-                            onClick={() => setView(view === 'days' ? 'years' : 'days')}
+                            onClick={() => {
+                                setDirection(0);
+                                setView(view === 'days' ? 'years' : 'days');
+                            }}
                             size="md"
                             variant="ghost"
                             rightIcon={<IconChevronDown className={cn("size-4 transition-transform text-muted-foreground", view !== 'days' && "rotate-180")} />}
                         >
-                            <Typography variant="md" weight="semibold" className="capitalize ">
+                            <Typography variant="md" weight="semibold" className="capitalize">
                                 {headerLabel}
                             </Typography>
                         </Button>
@@ -259,73 +306,97 @@ export default function DatePickerInput({
                         </Button>
                     </div>
 
-                    <div className="min-h-70">
-                        {view === 'days' && (
-                            <Picker
-                                mode="single"
-                                selected={tempDate}
-                                onSelect={setTempDate}
-                                month={currentMonth}
-                                onMonthChange={setCurrentMonth}
-                                locale={locale}
-                                dir={isFa ? "rtl" : "ltr"}
-                                disabled={disabledMatchers.length > 0 ? disabledMatchers : undefined}
-                                hideNavigation
-                                className="w-full rdp-custom"
-                                components={{
-                                    DayButton: CustomDayButton
+                    <div
+                        dir="ltr"
+                        className="min-h-[320px] relative overflow-x-hidden"
+                        {...swipeBind()}
+                        style={{ touchAction: "pan-y" }}
+                    >
+                        <AnimatePresence initial={false} custom={direction} mode="sync">
+                            <motion.div
+                                key={viewKey}
+                                custom={direction}
+                                variants={swipeVariants}
+                                initial="enter"
+                                animate="center"
+                                exit="exit"
+                                transition={{
+                                    x: { type: "spring", stiffness: 300, damping: 30 },
+                                    opacity: { duration: 0.2 }
                                 }}
-                            />
-                        )}
+                                className="absolute inset-0 w-full"
+                            >
+                                <div dir={isRTL ? "rtl" : "ltr"} className="h-full w-full">
+                                    {view === 'days' && (
+                                        <Picker
+                                            mode="single"
+                                            selected={tempDate}
+                                            onSelect={setTempDate}
+                                            month={currentMonth}
+                                            onMonthChange={(m) => {
+                                                setDirection(m > currentMonth ? 1 : -1);
+                                                setCurrentMonth(m);
+                                            }}
+                                            locale={locale}
+                                            dir={isFa ? "rtl" : "ltr"}
+                                            disabled={disabledMatchers.length > 0 ? disabledMatchers : undefined}
+                                            hideNavigation
+                                            className="w-full rdp-custom"
+                                            components={{
+                                                DayButton: CustomDayButton
+                                            }}
+                                        />
+                                    )}
 
-                        {view === 'months' && (
-                            <div className="grid grid-cols-3 gap-2">
-                                {Array.from({ length: 12 }).map((_, i) => {
-                                    const isCurrent = getMonthFn(currentMonth) === i;
-                                    // ✅ FIX: Use setMonthGreg instead of setMonthGregorian
-                                    const monthName = isFa
-                                        ? SHAMSI_MONTHS[i]
-                                        : formatGregorian(setMonthGreg(currentMonth, i), "MMM", { locale: enUS });
+                                    {view === 'months' && (
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {Array.from({ length: 12 }).map((_, i) => {
+                                                const isCurrent = getMonthFn(currentMonth) === i;
+                                                const monthName = isFa
+                                                    ? SHAMSI_MONTHS[i]
+                                                    : formatGregorian(setMonthGreg(currentMonth, i), "MMM", { locale: enUS });
 
-                                    return (
-                                        <Button
-                                            key={i}
-                                            variant={isCurrent ? "primary-active" : "ghost"}
-                                            size="md"
-                                            onClick={() => handleMonthSelect(i)}
-                                        >
-                                            <Typography variant="sm" weight="medium">
-                                                {monthName}
-                                            </Typography>
-                                        </Button>
-                                    );
-                                })}
-                            </div>
-                        )}
+                                                return (
+                                                    <Button
+                                                        key={i}
+                                                        variant={isCurrent ? "primary-active" : "ghost"}
+                                                        size="md"
+                                                        onClick={() => handleMonthSelect(i)}
+                                                    >
+                                                        <Typography variant="sm" weight="medium">
+                                                            {monthName}
+                                                        </Typography>
+                                                    </Button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
 
-                        {view === 'years' && (
-                            <div className="grid grid-cols-4 gap-2 max-h-64 overflow-y-auto scrollbar-hide px-1">
-                                {years.map((y) => {
-                                    const isCurrent = getYearFn(currentMonth) === y;
-                                    // ✅ FIX: Added { useGrouping: false }
-                                    const displayY = isFa
-                                        ? new Intl.NumberFormat('fa-IR', { useGrouping: false }).format(y)
-                                        : y;
-                                    return (
-                                        <Button
-                                            key={y}
-                                            variant={isCurrent ? "primary-active" : "ghost"}
-                                            size="sm"
-                                            onClick={() => handleYearSelect(y)}
-                                        >
-                                            <Typography variant="sm" weight="medium" className="">
-                                                {displayY}
-                                            </Typography>
-                                        </Button>
-                                    );
-                                })}
-                            </div>
-                        )}
+                                    {view === 'years' && (
+                                        <div className="grid grid-cols-4 gap-2 max-h-64 overflow-y-auto scrollbar-hide px-1">
+                                            {years.map((y) => {
+                                                const isCurrent = getYearFn(currentMonth) === y;
+                                                const displayY = isFa
+                                                    ? new Intl.NumberFormat('fa-IR', { useGrouping: false }).format(y)
+                                                    : y;
+                                                return (
+                                                    <Button
+                                                        key={y}
+                                                        variant={isCurrent ? "primary-active" : "ghost"}
+                                                        size="sm"
+                                                        onClick={() => handleYearSelect(y)}
+                                                    >
+                                                        <Typography variant="sm" weight="medium">
+                                                            {displayY}
+                                                        </Typography>
+                                                    </Button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
                     </div>
                 </div>
 

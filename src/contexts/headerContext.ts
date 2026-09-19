@@ -4,6 +4,7 @@ export interface HeaderConfig {
     title: string;
     icon?: ReactNode;
     action?: ReactNode;
+    trailingAction?: ReactNode; // ✅ Added for the right-side action
 }
 
 export interface HeaderContextType {
@@ -11,5 +12,4 @@ export interface HeaderContextType {
     setHeader: (config: HeaderConfig | null) => void;
 }
 
-// This is a value, not a component. Fast Refresh ignores files without components.
 export const HeaderContext = createContext<HeaderContextType | undefined>(undefined);

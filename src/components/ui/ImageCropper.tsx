@@ -1,5 +1,5 @@
-// src/components/ui/ImageCropper.tsx
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { IconZoomIn, IconColorFilter } from "@tabler/icons-react";
 import ModalWrapper from "@/components/ui/modal/ModalWrapper";
 import ModalHeader from "@/components/ui/modal/ModalHeader";
@@ -23,12 +23,12 @@ interface ImageCropperProps {
     file: File | null;
     onClose: () => void;
     onSave: (croppedFile: File) => void;
-    aspectRatio?: "16:9" | "1:1"; // NEW: Support different aspect ratios
+    aspectRatio?: "16:9" | "1:1";
 }
 
 const OUTPUT_SIZES = {
     "16:9": { width: 800, height: 450 },
-    "1:1": { width: 400, height: 400 }, // Square avatar
+    "1:1": { width: 400, height: 400 },
 };
 
 export default function ImageCropper({
@@ -36,8 +36,10 @@ export default function ImageCropper({
     file,
     onClose,
     onSave,
-    aspectRatio = "16:9" // Default to 16:9
+    aspectRatio = "16:9"
 }: ImageCropperProps) {
+    const { t } = useTranslation("common");
+
     const containerRef = useRef<HTMLDivElement>(null);
     const [cropData, setCropData] = useState<CropData | null>(null);
     const [grayscaleAmount, setGrayscaleAmount] = useState(0);
@@ -46,10 +48,13 @@ export default function ImageCropper({
 
     const dragStart = useRef({ x: 0, y: 0, imgX: 0, imgY: 0 });
 
+    // ✅ NEW: Refs for multi-touch pinch-to-zoom
+    const pointersRef = useRef<Map<number, React.PointerEvent>>(new Map());
+    const initialPinchRef = useRef<{ distance: number; scale: number } | null>(null);
+
     const outputSize = OUTPUT_SIZES[aspectRatio];
     const aspectClass = aspectRatio === "16:9" ? "aspect-video" : "aspect-square";
 
-    // Reset state synchronously during render when file changes
     const [prevFile, setPrevFile] = useState<File | null>(file);
     if (prevFile !== file) {
         setPrevFile(file);
@@ -161,32 +166,118 @@ export default function ImageCropper({
 
     const onPointerDown = (e: React.PointerEvent) => {
         if (!cropData) return;
-        setIsDragging(true);
-        dragStart.current = { x: e.clientX, y: e.clientY, imgX: cropData.x, imgY: cropData.y };
+
+        pointersRef.current.set(e.pointerId, e);
+
+        if (pointersRef.current.size === 2) {
+            // ✅ Start pinch
+            const pts = Array.from(pointersRef.current.values());
+            const dist = Math.hypot(pts[0].clientX - pts[1].clientX, pts[0].clientY - pts[1].clientY);
+            initialPinchRef.current = { distance: dist, scale: cropData.scale };
+            setIsDragging(false); // Hide grid and stop pan logic while pinching
+        } else if (pointersRef.current.size === 1) {
+            // ✅ Start pan
+            setIsDragging(true);
+            dragStart.current = { x: e.clientX, y: e.clientY, imgX: cropData.x, imgY: cropData.y };
+        }
+
         (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     };
 
     const onPointerMove = (e: React.PointerEvent) => {
-        if (!isDragging || !cropData || !containerRef.current) return;
+        if (pointersRef.current.has(e.pointerId)) {
+            pointersRef.current.set(e.pointerId, e);
+        }
 
-        const dx = e.clientX - dragStart.current.x;
-        const dy = e.clientY - dragStart.current.y;
+        if (!containerRef.current) return;
         const rect = containerRef.current.getBoundingClientRect();
 
-        const pos = clampPosition(
-            dragStart.current.imgX + dx,
-            dragStart.current.imgY + dy,
-            cropData.scale,
-            rect.width,
-            rect.height,
-            cropData.imgW,
-            cropData.imgH
-        );
+        if (pointersRef.current.size === 2 && initialPinchRef.current) {
+            // ✅ Pinch-to-zoom logic
+            const pts = Array.from(pointersRef.current.values());
+            const dist = Math.hypot(pts[0].clientX - pts[1].clientX, pts[0].clientY - pts[1].clientY);
+            const scaleFactor = dist / initialPinchRef.current.distance;
 
-        setCropData((prev) => (prev ? { ...prev, x: pos.x, y: pos.y } : null));
+            // ✅ FIX: Capture the scale into a local variable BEFORE the state updater.
+            // This prevents the "Cannot read properties of null" crash if onPointerUp 
+            // clears the ref before React executes this batched state update.
+            const initialScale = initialPinchRef.current.scale;
+
+            const pinchCenterX = (pts[0].clientX + pts[1].clientX) / 2 - rect.left;
+            const pinchCenterY = (pts[0].clientY + pts[1].clientY) / 2 - rect.top;
+
+            setCropData((prev) => {
+                if (!prev) return null;
+
+                // Use the locally captured initialScale instead of the ref
+                let newScale = initialScale * scaleFactor;
+
+                // Clamp to slider's min/max (1x to 3x base scale)
+                const minScale = prev.baseScale;
+                const maxScale = prev.baseScale * 3;
+                newScale = Math.min(maxScale, Math.max(minScale, newScale));
+
+                // Calculate image coordinates at the pinch center
+                const imageCenterX = (pinchCenterX - prev.x) / prev.scale;
+                const imageCenterY = (pinchCenterY - prev.y) / prev.scale;
+
+                // Keep the pinch center anchored to the same screen position
+                const newX = pinchCenterX - imageCenterX * newScale;
+                const newY = pinchCenterY - imageCenterY * newScale;
+
+                const pos = clampPosition(newX, newY, newScale, rect.width, rect.height, prev.imgW, prev.imgH);
+                return { ...prev, scale: newScale, x: pos.x, y: pos.y };
+            });
+
+        } else if (isDragging && pointersRef.current.size === 1) {
+            // ✅ Single finger pan logic
+            const pointer = Array.from(pointersRef.current.values())[0];
+            const dx = pointer.clientX - dragStart.current.x;
+            const dy = pointer.clientY - dragStart.current.y;
+
+            setCropData((prev) => {
+                if (!prev) return null;
+                const pos = clampPosition(
+                    dragStart.current.imgX + dx,
+                    dragStart.current.imgY + dy,
+                    prev.scale,
+                    rect.width,
+                    rect.height,
+                    prev.imgW,
+                    prev.imgH
+                );
+                return { ...prev, x: pos.x, y: pos.y };
+            });
+        }
     };
 
-    const onPointerUp = () => setIsDragging(false);
+    const onPointerUp = (e: React.PointerEvent) => {
+        pointersRef.current.delete(e.pointerId);
+
+        if (pointersRef.current.size < 2) {
+            initialPinchRef.current = null;
+        }
+
+        if (pointersRef.current.size === 0) {
+            setIsDragging(false);
+        } else if (pointersRef.current.size === 1 && cropData) {
+            // ✅ Transitioning from pinch back to pan: reset drag origin to prevent jumping
+            const remainingPointer = Array.from(pointersRef.current.values())[0];
+            dragStart.current = {
+                x: remainingPointer.clientX,
+                y: remainingPointer.clientY,
+                imgX: cropData.x,
+                imgY: cropData.y
+            };
+            setIsDragging(true);
+        }
+    };
+
+    const onPointerCancel = (e: React.PointerEvent) => {
+        pointersRef.current.delete(e.pointerId);
+        if (pointersRef.current.size < 2) initialPinchRef.current = null;
+        if (pointersRef.current.size === 0) setIsDragging(false);
+    };
 
     const onZoomChange = (newZoom: number) => {
         if (!cropData || !containerRef.current) return;
@@ -263,7 +354,7 @@ export default function ImageCropper({
 
     return (
         <ModalWrapper open={open} onClose={onClose}>
-            <ModalHeader title={aspectRatio === "1:1" ? "Crop Avatar" : "Crop & Edit"} onClose={onClose} />
+            <ModalHeader title={aspectRatio === "1:1" ? t("cropper.cropAvatar") : t("cropper.cropAndEdit")} onClose={onClose} />
 
             {cropData ? (
                 <div className="flex flex-col gap-4">
@@ -273,7 +364,7 @@ export default function ImageCropper({
                         onPointerDown={onPointerDown}
                         onPointerMove={onPointerMove}
                         onPointerUp={onPointerUp}
-                        onPointerCancel={onPointerUp}
+                        onPointerCancel={onPointerCancel}
                     >
                         <img
                             src={cropData.url}
@@ -299,12 +390,11 @@ export default function ImageCropper({
                     </div>
 
                     <div className="flex flex-col gap-4">
-                        {/* Zoom Slider */}
                         <div className="flex flex-col gap-3">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <IconZoomIn className="size-5 text-muted-foreground" />
-                                    <Typography variant="sm" weight="medium">Zoom</Typography>
+                                    <Typography variant="sm" weight="medium">{t("cropper.zoom")}</Typography>
                                 </div>
                                 <Typography variant="sm" className=" text-muted-foreground">
                                     {Math.round((cropData.scale / cropData.baseScale) * 100)}%
@@ -323,7 +413,7 @@ export default function ImageCropper({
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <IconColorFilter className="size-5 text-muted-foreground" />
-                                    <Typography variant="sm" weight="medium">Grayscale</Typography>
+                                    <Typography variant="sm" weight="medium">{t("cropper.grayscale")}</Typography>
                                 </div>
                                 <Typography variant="sm" className=" text-muted-foreground">
                                     {grayscaleAmount}%
@@ -345,7 +435,7 @@ export default function ImageCropper({
                             disabled={isSaving}
                         >
                             <Typography variant="md" weight="bold">
-                                {isSaving ? "Saving..." : "Save Photo"}
+                                {isSaving ? t("cropper.saving") : t("cropper.savePhoto")}
                             </Typography>
                         </Button>
                     </div>
@@ -353,7 +443,7 @@ export default function ImageCropper({
             ) : (
                 <div className="flex h-40 items-center justify-center">
                     <Typography variant="sm" className="text-muted-foreground">
-                        Loading image...
+                        {t("cropper.loadingImage")}
                     </Typography>
                 </div>
             )}

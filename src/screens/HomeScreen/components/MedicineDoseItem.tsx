@@ -8,9 +8,8 @@ import { useDrag } from "@use-gesture/react";
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-// ✅ Added date-fns imports for localized formatting
 import { format } from "date-fns";
-import { enUS, faIR } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import type { MedicineDoseItemProps } from "../types";
 import { getTranslatedInstruction } from "@/lib/constants/medicineInstructionOptions";
 
@@ -24,6 +23,7 @@ export default function MedicineDoseItem({
     status = "taken",
     showAction = false,
     takenAt,
+    currentToday, // ✅ Added
     onTake,
     onUndo,
 }: MedicineDoseItemProps) {
@@ -31,9 +31,6 @@ export default function MedicineDoseItem({
     const isRTL = useIsRTL();
     const selectedColor = MEDICINE_COLORS.find((color) => color.id === medicine.color) || MEDICINE_COLORS[0];
     const instructionsText = getTranslatedInstruction(medicine.instructions || "");
-
-    // ✅ Determine locale for date formatting
-    const dateLocale = i18n.language === "fa" ? faIR : enUS;
 
     const isTaken = status === "taken";
     const isMissed = status === "missed";
@@ -61,6 +58,53 @@ export default function MedicineDoseItem({
             setFullWidth(containerRef.current.offsetWidth);
         }
     }, []);
+
+    // ✅ Smart Date Formatter
+    const formatTakenAt = (isoString: string) => {
+        const date = new Date(isoString);
+        const now = currentToday || new Date();
+
+        // Strip time to compare pure calendar days
+        const logDate = new Date(date);
+        logDate.setHours(0, 0, 0, 0);
+
+        const nowDate = new Date(now);
+        nowDate.setHours(0, 0, 0, 0);
+
+        const diffTime = nowDate.getTime() - logDate.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+        let datePart;
+        if (diffDays === 0) {
+            datePart = t("home.today");
+        } else if (diffDays === 1) {
+            datePart = t("home.yesterday");
+        } else {
+            if (i18n.language === "fa") {
+                // Shamsi date without year (e.g., "۲۸ شهریور")
+                datePart = new Intl.DateTimeFormat("fa-IR", {
+                    month: "long",
+                    day: "numeric",
+                    calendar: "persian",
+                }).format(date);
+            } else {
+                // Gregorian date without year (e.g., "Sep 19")
+                datePart = format(date, "MMM d", { locale: enUS });
+            }
+        }
+
+        // Format time (e.g., "14:30" or "۱۴:۳۰")
+        const timeFormatted = i18n.language === "fa"
+            ? new Intl.DateTimeFormat("fa-IR", { hour: "2-digit", minute: "2-digit", hour12: false }).format(date)
+            : format(date, "HH:mm", { locale: enUS });
+
+        // Use Persian comma for RTL, standard comma for LTR
+        const separator = i18n.language === "fa" ? "، " : ", ";
+        return `${datePart}${separator}${timeFormatted}`;
+    };
+
+    // ... [bind, getSwipeHint, getTrackTransform, renderFeedbackPanel remain exactly the same] ...
+    // (Omitted for brevity, keep your existing logic for them)
 
     const bind = useDrag(
         ({ active, movement: [mx], velocity: [vx] }) => {
@@ -179,6 +223,7 @@ export default function MedicineDoseItem({
                 opacity: { duration: 0.3, delay: REVEAL_DELAY / 1000 },
                 x: { duration: 0.3, delay: REVEAL_DELAY / 1000 }
             }}
+            className=""
         >
             <div
                 ref={containerRef}
@@ -202,7 +247,7 @@ export default function MedicineDoseItem({
                     <div className="w-1/2 shrink-0">
                         <div
                             className={cn(
-                                "relative app_container app_gradient app-blur h-full flex flex-row items-center gap-3 px-5 py-9",
+                                "relative app_container app_gradient app-blur flex flex-row items-center gap-3 px-5 h-32 max-h-32 min-h-32",
                                 isRTL && "flex-row-reverse",
                                 isTaken && !isCompleting && "grayscale-75 dark:grayscale-80",
                             )}
@@ -251,9 +296,9 @@ export default function MedicineDoseItem({
                                     {takenAt && (
                                         <>
                                             <span className="text-xs w-3 h-0.5 min-w-3 bg-foreground rounded-full" />
-                                            {/* ✅ Format the raw ISO string into a full localized date & time */}
+                                            {/* ✅ Replaced inline format with smart formatter */}
                                             <Typography variant="xs" className="text-foreground text-nowrap">
-                                                {t("home.loggedAt")} {format(new Date(takenAt), "MMM d, yyyy, HH:mm", { locale: dateLocale })}
+                                                {t("home.loggedAt")} {formatTakenAt(takenAt)}
                                             </Typography>
                                         </>
                                     )}
