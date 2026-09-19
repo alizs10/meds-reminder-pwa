@@ -1,6 +1,7 @@
 {
     "app": {
-        "name": "Meds Reminder"
+        "name": "Meds Reminder",
+        "version": "version {{version}}"
     },
     "home": {
         "yesterday": "Yesterday",
@@ -68,7 +69,7 @@
     },
     "profile": {
         "greeting": "Hey, {{name}}",
-        "greetingFallback": "Hey, Champ!",
+        "greetingFallback": "Hey, Dear!",
         "nameFallback": "Your Name",
         "yearsOld": "{{count}} years old"
     },
@@ -85,5 +86,26 @@
         "saving": "Saving...",
         "savePhoto": "Save Photo",
         "loadingImage": "Loading image..."
+    },
+    "backup": {
+        "title": "Backup & Restore",
+        "description": "Export your settings and medication history to a file, or restore from a previous backup.",
+        "export": "Export Data",
+        "import": "Import Data",
+        "exportSuccess": "Data exported successfully!",
+        "exportError": "Failed to export data.",
+        "importSuccess": "Data imported! Reloading...",
+        "importError": "Import failed: {{message}}"
+    },
+    "reset": {
+        "title": "Reset All Data",
+        "description": "Permanently delete all your medicines, history, and settings. This action cannot be undone.",
+        "button": "Reset App",
+        "resetting": "Resetting...",
+        "confirmTitle": "Reset All Data?",
+        "confirmDescription": "This will permanently delete all your medicines, medication history, profile information, and settings. You will need to set up the app again. This action cannot be undone.",
+        "confirm": "Reset Everything",
+        "success": "All data has been reset",
+        "error": "Failed to reset data"
     }
 }

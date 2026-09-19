@@ -57,9 +57,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
-  // ✅ FIX: React 19 "Adjusting state when a prop changes" pattern.
-  // We use a state variable instead of a ref to track the previous `isOpen` value.
-  // This avoids "Cannot access refs during render" and "cascading renders in effect" errors.
+  const appVersion = import.meta.env.VITE_APP_VERSION || "0";
+
   const [isMounted, setIsMounted] = useState(isOpen);
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
@@ -67,11 +66,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     setPrevIsOpen(isOpen);
     if (isOpen) {
       setIsMounted(true);
-      setDragX(0); // Reset drag position instantly when opening
+      setDragX(0);
     }
   }
 
-  // We only use useEffect for the delayed unmount timeout (side effect)
   useEffect(() => {
     if (!isOpen && isMounted) {
       const timer = setTimeout(() => setIsMounted(false), CLOSE_ANIMATION_MS);
@@ -101,12 +99,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         let shouldClose = false;
 
         if (isRTL) {
-          // In RTL, sidebar is on the right. Only swiping RIGHT (dx === 1) should close it.
           if (dx === 1 && (mx > 100 || vx > 0.5)) {
             shouldClose = true;
           }
         } else {
-          // In LTR, sidebar is on the left. Only swiping LEFT (dx === -1) should close it.
           if (dx === -1 && (mx < -100 || vx < -0.5)) {
             shouldClose = true;
           }
@@ -170,20 +166,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           style={{ touchAction: "pan-y" }}
         >
           <div className="flex-center-between pt-safe mt-5 p-5">
-            <Link to="/" onClick={onClose}>
-              <Button
-                variant="none"
-                size="sm"
-                className="px-0 py-0"
-                leftIcon={<img src="/logo.webp" className="h-8 w-auto" alt="logo" />}
-              >
-                <Typography variant="md" weight="bold" className="text-nowrap">
-                  {t("app.name")}
-                </Typography>
-              </Button>
+            <Link to="/" onClick={onClose} className="flex items-center gap-x-3">
+              <img src="/logo.webp" className="h-8 w-auto" alt="logo" />
+              <Typography variant="md" weight="bold" className="text-nowrap">
+                {t("app.name")}
+              </Typography>
             </Link>
 
-
+            <Typography variant="xs" className="text-muted-foreground text-nowrap">
+              {t("app.version", { version: appVersion })}
+            </Typography>
           </div>
 
           <div className="flex-1 min-h-0 overflow-y-scroll scrollbar-none flex flex-col gap-y-4 pb-6">
@@ -208,7 +200,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </div>
 
           <div className="mt-auto mb-4 px-5 gap-x-3 w-full">
-            {/* {true && ( */}
             {isInstallable && (
               <Button
                 size="sm"
@@ -258,8 +249,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </Button>
             </div>
           </div>
-        </motion.aside >
-      </div >
+        </motion.aside>
+      </div>
 
       <ConfirmDialog
         open={isHintOpen}

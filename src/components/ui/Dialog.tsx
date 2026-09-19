@@ -87,7 +87,7 @@ export default function ConfirmDialog({
             onClick={onCancel}
             variant={cancelVariant}
             className="flex-1"
-            rightIcon={cancelIcon}
+            leftIcon={cancelIcon}
           >
             <Typography variant="md" className="text-secondary-foreground">
               {cancelText}
@@ -99,10 +99,10 @@ export default function ConfirmDialog({
             onClick={onConfirm}
             variant={confirmVariant}
             className="flex-1"
-            rightIcon={confirmIcon}
+            leftIcon={confirmIcon}
             disabled={isConfirmDisabled}
           >
-            <Typography variant="md" weight="semibold">
+            <Typography variant="md" weight="semibold" className="text-nowrap">
               {confirmText}
             </Typography>
           </Button>

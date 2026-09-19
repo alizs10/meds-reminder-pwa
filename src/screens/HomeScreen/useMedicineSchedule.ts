@@ -58,14 +58,12 @@ export function useMedicineSchedule() {
     }, [nowTick]);
 
     // 3. Generate week dates based on the ACTUAL current today.
-    // ✅ MOVED UP: Must be declared before the render-phase adjustment logic below.
     const weekDates = useMemo(() => {
         const weekStart = startOfWeek(currentToday, { weekStartsOn });
         return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
     }, [currentToday, weekStartsOn]);
 
-    // 4. ✅ FIX: Adjust state during the render phase (React 19 pattern)
-    // This replaces the useEffect that caused "cascading renders" and "accessed before declaration" errors.
+    // 4. Adjust state during the render phase (React 19 pattern)
     const [prevToday, setPrevToday] = useState(currentToday);
 
     if (currentToday.getTime() !== prevToday.getTime()) {
@@ -201,19 +199,27 @@ export function useMedicineSchedule() {
             .filter((item) => item.status === "upcoming")
             .sort((a, b) => a.time.localeCompare(b.time));
 
-        const nextTimeStr = upcomingItems.length > 0
-            ? upcomingItems[0].time
-            : null;
+        let nextForSelectedDay: DoseListItem[] = [];
+        let laterForSelectedDay: DoseListItem[];
 
-        const nextForSelectedDay: DoseListItem[] = nextTimeStr
-            ? upcomingItems
-                .filter((item) => item.time === nextTimeStr)
-                .map((item) => ({ ...item, status: "next" as DoseStatus }))
-            : [];
+        // ✅ FIX: Only single out the "next" dose if the user is viewing TODAY.
+        if (isTodaySelected) {
+            const nextTimeStr = upcomingItems.length > 0 ? upcomingItems[0].time : null;
 
-        const laterForSelectedDay: DoseListItem[] = nextTimeStr
-            ? upcomingItems.filter((item) => item.time !== nextTimeStr)
-            : upcomingItems;
+            nextForSelectedDay = nextTimeStr
+                ? upcomingItems
+                    .filter((item) => item.time === nextTimeStr)
+                    .map((item) => ({ ...item, status: "next" as DoseStatus }))
+                : [];
+
+            laterForSelectedDay = nextTimeStr
+                ? upcomingItems.filter((item) => item.time !== nextTimeStr)
+                : upcomingItems;
+        } else {
+            // ✅ For future days, all doses are just "upcoming" and should be rendered together
+            // in the "Upcoming" section (which is always visible in the UI).
+            laterForSelectedDay = upcomingItems;
+        }
 
         return {
             selectedDateStr,

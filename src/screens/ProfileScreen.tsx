@@ -17,6 +17,7 @@ import { profileSchema, type ProfileFormValues } from "@/lib/schemas";
 import { useTranslation } from "react-i18next";
 import { useIsRTL } from "@/hooks/useIsRTL";
 import { useCustomHeader } from "@/hooks/useCustomHeader";
+import { cn } from "@/lib/util";
 
 const getDefaultBirthdate = () => {
     const defaultDate = new Date();
@@ -157,7 +158,10 @@ export default function ProfileScreen() {
                     </div>
 
                     {hasAvatar ? (
-                        <div className="-mt-8 flex-row-center app_container app_gradient app-blur translate-1/3">
+                        <div className={cn(
+                            "-mt-8 flex-row-center app_container app_gradient app-blur",
+                            isRTL ? "-translate-x-1/3" : "translate-x-1/3",
+                        )}>
                             <Button size="icon-sm" variant="none" className="pointer-events-auto" onClick={(e) => { e.stopPropagation(); handleEditAvatar(); }} aria-label="Edit avatar">
                                 <IconPencil className="size-4 text-warning" />
                             </Button>

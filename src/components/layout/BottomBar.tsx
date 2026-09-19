@@ -10,7 +10,7 @@ export default function BottomBar({ onMenuClick }: BottomBarProps) {
   const { t } = useTranslation("common");
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 pb-safe">
+    <div className="fixed bottom-0 left-0 right-0 z-50 pb-safe bg-linear-to-t from-black/20 dark:from-black/50 to-transparent">
       <div className="max-w-116 w-full mx-auto mb-4 h-14 flex-center gap-1.5">
         <div className="app_container app_gradient app-blur flex-center h-14 px-2 gap-0">
           <NavLink to="/">{({ isActive }) => (

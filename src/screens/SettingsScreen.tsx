@@ -11,6 +11,8 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useIsRTL } from "@/hooks/useIsRTL";
 import { useCustomHeader } from "@/hooks/useCustomHeader";
+import DataBackup from "./SettingsScreen/components/DataBackup";
+import ResetData from "./SettingsScreen/components/ResetData";
 
 export default function SettingsScreen() {
     const { t } = useTranslation('common');
@@ -102,6 +104,11 @@ export default function SettingsScreen() {
                         })}
                     </div>
                 </div>
+
+                <DataBackup />
+
+                {/* ✅ RESET DATA */}
+                <ResetData />
             </div>
         </div>
     );
