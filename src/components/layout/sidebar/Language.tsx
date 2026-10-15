@@ -20,7 +20,7 @@ export default function Language() {
                     className="flex-1"
                     size="sm"
                     variant={language === "en" ? "primary-active" : "ghost"}
-                    leftIcon={<img className="size-5 min-w-5" src="/flags/us.svg" />}
+                // leftIcon={<img className="size-5 min-w-5" src="/flags/us.svg" />}
                 >
                     <Typography variant="sm" weight="medium">English</Typography>
                 </Button>
@@ -30,7 +30,7 @@ export default function Language() {
                     className="flex-1"
                     size="sm"
                     variant={language === "fa" ? "primary-active" : "ghost"}
-                    leftIcon={<img className="size-5 min-w-5" src="/flags/iran.svg" />}
+                // leftIcon={<img className="size-5 min-w-5" src="/flags/iran.svg" />}
                 >
                     <Typography variant="sm" weight="medium">پارسی</Typography>
                 </Button>

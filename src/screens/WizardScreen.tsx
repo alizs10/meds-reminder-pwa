@@ -153,10 +153,14 @@ export default function WizardScreen() {
               {t("languageLabel")}
             </Typography>
             <div className="grid grid-cols-2 gap-1">
-              <Button type="button" variant={selectedLanguage === "en" ? "primary-active" : "primary"} size="sm" onClick={() => setValue("language", "en", { shouldValidate: true })} leftIcon={<img className="size-5 min-w-5" src="/flags/us.svg" />}>
+              <Button type="button" variant={selectedLanguage === "en" ? "primary-active" : "primary"} size="sm" onClick={() => setValue("language", "en", { shouldValidate: true })}
+              // leftIcon={<img className="size-5 min-w-5" src="/flags/us.svg" />}
+              >
                 <Typography variant="xs" weight="medium">English</Typography>
               </Button>
-              <Button type="button" variant={selectedLanguage === "fa" ? "primary-active" : "primary"} size="sm" onClick={() => setValue("language", "fa", { shouldValidate: true })} leftIcon={<img className="size-5 min-w-5" src="/flags/iran.svg" />}>
+              <Button type="button" variant={selectedLanguage === "fa" ? "primary-active" : "primary"} size="sm" onClick={() => setValue("language", "fa", { shouldValidate: true })}
+              // leftIcon={<img className="size-5 min-w-5" src="/flags/iran.svg" />}
+              >
                 <Typography variant="xs" weight="medium">پارسی</Typography>
               </Button>
             </div>

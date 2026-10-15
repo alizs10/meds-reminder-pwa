@@ -63,10 +63,14 @@ export default function SettingsScreen() {
                         {t("settings.language")}
                     </Typography>
                     <div className="grid grid-cols-2 gap-1">
-                        <Button type="button" variant={settings.language === "en" ? "primary-active" : "primary"} size="sm" onClick={() => updateSettings({ language: "en" })} leftIcon={<img className="size-5 min-w-5" src="/flags/us.svg" />}>
+                        <Button type="button" variant={settings.language === "en" ? "primary-active" : "primary"} size="sm" onClick={() => updateSettings({ language: "en" })}
+                        // leftIcon={<img className="size-5 min-w-5" src="/flags/us.svg" />}
+                        >
                             <Typography variant="xs" weight="medium">English</Typography>
                         </Button>
-                        <Button type="button" variant={settings.language === "fa" ? "primary-active" : "primary"} size="sm" onClick={() => updateSettings({ language: "fa" })} leftIcon={<img className="size-5 min-w-5" src="/flags/iran.svg" />}>
+                        <Button type="button" variant={settings.language === "fa" ? "primary-active" : "primary"} size="sm" onClick={() => updateSettings({ language: "fa" })}
+                        //  leftIcon={<img className="size-5 min-w-5" src="/flags/iran.svg" />}
+                        >
                             <Typography variant="xs" weight="medium">پارسی</Typography>
                         </Button>
                     </div>
