@@ -6,6 +6,7 @@ import { ThemeProvider } from './providers/ThemeProvider.tsx'
 import Toaster from './components/ui/Toaster.tsx'
 import { LanguageProvider } from './providers/LanguageProvider.tsx'
 
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <LanguageProvider>
